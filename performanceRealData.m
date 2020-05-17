@@ -42,7 +42,12 @@ function [orig,ROI,offROI] = createOrig(rec)
     isFitGood = input('is fit good? [0/1]');
     close(hFig);
     while ~isFitGood % while fit isn't good, keep asking for new ROI until it is
-        R = roipoly(MinMaxNorm(rec));
+        again = 1; R = zeros(size(brn));
+        while again
+            thisR = roipoly(MinMaxNorm(rec));
+            R = R | thisR;
+            again = input('draw another ROI? [0/1]');
+        end
         img2fit = double(R);
         [fitresult, zfit, fiterr1, zerr, resnorm, rr] = fmgaussfit(1:size(brn,2),1:size(brn,1),img2fit);
         hFig = figure; subplot(1,2,1); imagesc(rec); subplot(1,2,2);imagesc(zfit);

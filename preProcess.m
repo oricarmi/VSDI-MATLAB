@@ -35,7 +35,7 @@ function [ZZZ] = preProcess(Z)
             ZZZ = Z';
     end
     params.pre.filterType = d;
-    switch params.pre.standardization
+    switch params.pre.normalization
         case 'z'
             ZZZ = (ZZZ-mean(ZZZ))./std(ZZZ);
         case 'minmax'

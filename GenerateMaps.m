@@ -11,14 +11,14 @@ if allBrn == 0
 end
  % <---------------- generate signals
  try 
-     if what/10>1 %8locs/9locs/... (not 2hz)
+     if what/10<1 %8locs/9locs/... (not 2hz)
          load('responseSig.mat');
      else
          load('responseSig2Hz.mat');
      end
  catch
     if isempty(basis)
-        if what/10>1 %8locs/9locs/... (not 2hz)
+        if what/10<1 %8locs/9locs/... (not 2hz)
             t = 0:1/fs:(1-1/fs); % 1 hz
         else %2hz
             t = 0:1/fs:(0.5-1/fs); % 2 hz
@@ -69,15 +69,20 @@ end
 defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
 % ---->
 ZZ = preProcess(Z);
-[ZZZ,~,ZZZZ,beta] = GLM_VSDI(ZZ,[0.78 3.3 6.6],params.experiment.theoreticalSigs');
-implay(rshp(ZZ),20); % play video to check results of TSCA 
+implay(rshp(ZZ),20); % play video
+[ZZZ,ZZZZ,ZZZZZ,beta] = GLM_VSDI(ZZ,[0.78 3.3 6.6],params.experiment.theoreticalSigs');
 mapGLM = postProcess(rshp([beta(end-(params.experiment.N-1):end,:)]'));
-mapAOF = AvgOfFrms(rshp(ZZZ));
-mapTmax = Tmax(ZZZ); 
-mapCorr = Correlation2All(ZZZ);
+mapAOF = AvgOfFrms(rshp(ZZ));
+mapTmax = Tmax(ZZ); 
+mapCorr = Correlation2All(ZZ);
 mapTSCA = genTSCA(ZZZ); 
 vc(2)=0; xs=[0.3 1]; %% remove limits and title from plots if vc(2)=1 and show scale xs=[x y]
 vc(3)=1; %show reject/anti wave if vc(3)=1;
-plt_on=0; cnd=[]; p=1; x=1; t_lmts=[0.1 0.3];  stl=[3 50]; t_flt=[]; s_flt=[params.post.gaussfltSTD 2];  fgn=100; scl=[]; cmap=colormap(jet);
-[mxc rxc]=xp_mp(cfn, cnd, p, x, t_lmts, stl,  t_flt, s_flt);
-mapNadav = rshp(rxc);
+plt_on=0; cnd=[];  s_flt=[params.post.gaussfltSTD 2]; t_flt = [];
+fgn=100; scl=[]; cmap=colormap(jet);
+cfn2 = cell(params.experiment.what,1);
+for i=1:params.experiment.what
+    cfn2{i} = ZZ(:,(i-1)*params.experiment.T1+1:i*params.experiment.T1);
+end
+[mxc rxc]=xp_mp(cfn2, cnd, params.Nadav.p, params.Nadav.x, params.Nadav.t_lmts, params.Nadav.settle,  t_flt, s_flt);
+mapNadav = postProcess(rshp(mxc(:,end-params.experiment.what+1:end)));

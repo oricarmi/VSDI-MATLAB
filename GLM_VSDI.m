@@ -17,7 +17,7 @@ function [Signal1,Signal2,Signal3,beta] = GLM_VSDI(Z,noiseFreqs,basis)
     All = Xtot*beta;
     Residuals = Z - All;
     Signal1 = [1/beta(1)*sign(beta(1))*(Z - Xn*beta(2:(size(Xn,2)+1),:))]';
-    Signal2 = [1/beta(1)*sign(beta(1))*(basis*beta(end-(size(basis,2)-1):end,:)+Residuals)]';
+    Signal2 = [(basis*beta(end-(size(basis,2)-1):end,:)+Residuals)]';
     Signal3 = [basis*beta(end-(size(basis,2)-1):end,:)]';
     Noise = [Xn*beta(2:(size(Xn,2)+1),:)]';   
 end

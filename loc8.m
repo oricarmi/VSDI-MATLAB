@@ -28,7 +28,7 @@ clz; n=4; [cf1 cfn trsh0]=strt_up(fname, n);
 [dt_dfof dt_nrm]=int_nlz(cf1, cfn, n, 0.1, 1);
 
 %% show avg
-n_strt=2; px=3; lgn00=lgn(n_strt:end,:);
+n_strt=3; px=3; lgn00=lgn(n_strt:end,:);
 
 % clz;
 [rf cf]=avg_mx(cfn(n_strt:end), px); %find maximum of average of conditions, 2nd input is spatial filter width

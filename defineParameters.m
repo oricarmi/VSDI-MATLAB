@@ -5,6 +5,7 @@ function defineParameters(paramsFilePath,what,Z)
     params.experiment.T = size(Z,3);
     params.experiment.what = what;
     params.experiment.Z = Z;
+    prms = readtable(paramsFilePath);
     if what == 8
         params.experiment.N = 8;
     else
@@ -17,13 +18,15 @@ function defineParameters(paramsFilePath,what,Z)
         params.experiment.responseSig = load('responseSig2Hz.mat').responseSig;
         params.experiment.T1 = 50;% one repetition of stimulus asmples
     end
+    if ~isempty(prms.numval{strcmp(prms.method,'experiment') & contains(prms.parameter,'circshift')}) || str2num(prms.numval{strcmp(prms.method,'experiment') & contains(prms.parameter,'circshift')})
+        params.experiment.responseSig = circshift(params.experiment.responseSig,str2num(prms.numval{strcmp(prms.method,'experiment') & contains(prms.parameter,'circshift')}));
+    end
     params.experiment.N = params.experiment.T/params.experiment.T1;
     params.experiment.theoreticalSigs = buildTheoreticalSigs();
-
-% read parameters from csv file
-    prms = readtable(paramsFilePath);
-    params.pre.filter = prms.textval{prms.numval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'filter')}};
-    params.pre.standardize = prms.textval{prms.numval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'standardization')}};
+    % read parameters from csv file
+    params.pre.filter = prms.textval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'filter')};
+    params.pre.normalization = prms.textval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'normalization')};
+    params.post.normalization = prms.textval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'normalization')};
     params.pre.cutoff = str2num(prms.numval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'cutoff')});
     params.post.gaussfltSTD = str2num(prms.numval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'gaussfltSTD')});
     params.post.medFiltSize = str2num(prms.numval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'medFiltSize')});
