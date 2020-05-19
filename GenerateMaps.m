@@ -1,7 +1,5 @@
 function [mapTSCA,mapTmax,mapAOF,mapCorr,mapGLM,mapNadav] = GenerateMaps(fname,n,what)
 % A function that generates maps from all methods
-addpath('C:\Users\orica\Dropbox\fcns_and_decript');
-addpath('C:\Users\orica\Dropbox\master degree\codes');
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 basis params
 [cf1 cfn trsh0]=strt_up(fname, n);  
 prompt = 'Whole Brain? [0,1]';
@@ -80,9 +78,14 @@ vc(2)=0; xs=[0.3 1]; %% remove limits and title from plots if vc(2)=1 and show s
 vc(3)=1; %show reject/anti wave if vc(3)=1;
 plt_on=0; cnd=[];  s_flt=[params.post.gaussfltSTD 2]; t_flt = [];
 fgn=100; scl=[]; cmap=colormap(jet);
-cfn2 = cell(params.experiment.what,1);
-for i=1:params.experiment.what
+if params.experiment.what<10
+    Until = params.experiment.what;
+else
+    Until = floor(params.experiment.what/10);
+end
+cfn2 = cell(Until,1);
+for i=1:Until
     cfn2{i} = ZZ(:,(i-1)*params.experiment.T1+1:i*params.experiment.T1);
 end
 [mxc rxc]=xp_mp(cfn2, cnd, params.Nadav.p, params.Nadav.x, params.Nadav.t_lmts, params.Nadav.settle,  t_flt, s_flt);
-mapNadav = postProcess(rshp(mxc(:,end-params.experiment.what+1:end)));
+mapNadav = postProcess(rshp(mxc(:,end-Until+1:end)));

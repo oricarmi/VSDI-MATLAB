@@ -36,12 +36,10 @@ t = linspace(0,(T-1)./fs,T);
 [I1,I2] = ndgrid([repmat(linspace(0,2*pi,m/2),1,2)]',[repmat(linspace(0,2*pi,m/2),1,2)]);
 noises(1).time = normrnd(0,noiseSig,T,1);
 noises(1).space = normrnd(0,1,m,m);%cos(I1);
-noises(2).time = noiseSig*cos(2*pi*1.*t'+rand(size(t')).*(2*pi));%normrnd(0,noiseSig,T,1);
-noises(2).space = normrnd(0,1,m,m);
-noises(3).time = noiseSig*cos(2*pi*3.*t')+normrnd(0,noiseSig/2,T,1);
-noises(3).space = normrnd(0,1,m,m);%cos(I2);
-noises(4).time = noiseSig*cos(2*pi*0.67.*t')+normrnd(0,noiseSig/2,T,1);
-noises(4).space = normrnd(0,1,m,m);
+noises(2).time = noiseSig*cos(2*pi*3.*t')+normrnd(0,noiseSig/2,T,1);
+noises(2).space = cos(3.*I1);
+noises(3).time = noiseSig*cos(2*pi*0.67.*t')+normrnd(0,noiseSig/2,T,1);
+noises(3).space = normrnd(0,1,m,m);
 figure; ind2plot = [1,3,5];
 for i=1:length(noises)
     subplot(3,2,ind2plot(i))
@@ -60,8 +58,7 @@ for i = 1:T
         signals(5).time(i)*signals(5).space+...
         noises(1).time(i)*noises(1).space+...
         noises(2).time(i)*noises(2).space+...
-        noises(3).time(i)*noises(3).space+...
-        noises(4).time(i)*noises(4).space...
+        noises(3).time(i)*noises(3).space...
         ,[],1);
 end
 % for i=1:size(Z,1) % iterate pixels and add exponential trend)
@@ -78,13 +75,13 @@ theoreticalSig = zeros(length(signals(1).time),length(signals));
 for i=1:length(signals)
     theoreticalSig(:,i) = normpdf(0:0.1:(T-1)/10,stim_time(i),1);
 end
-[~,ZZ,ZZZ,betas] = GLM_VSDI(Z,[0.67 3],theoreticalSig);
+[ZZ,ZZZ,ZZZZ,betas] = GLM_VSDI(Z,[0.67 3],theoreticalSig);
 mapGLM = rshp(betas(6:end,:)');
 retinotopicMapGLM = retinotopicMapFromIndividualMaps(mapGLM,2);
 %% calc performance measures between theoretical signal and plain average 
 for i=1:length(signals)
     [~,I] = max(signals(i).time);
-    mapORIG(:,:,i) = reshape(mean(ZZZ(:,I-25:I+25),2),40,40);
+    mapORIG(:,:,i) = reshape(mean(ZZ(:,I-25:I+25),2),40,40);
     [origMSE(i),origPSNR(i),origCNR(i),origMSSIM(i),origCorr(i),origCP(i)] = getPerformance( mapORIG(:,:,i),signals(i).space,signals(i).space~=DC,signals(i).space==DC);
 %     figure;imagesc(reshape(mean(Z(:,I-25:I+25),2),40,40));
 end
@@ -96,7 +93,7 @@ noise3New.time = createToeplitz(3,0.1,1,1,T); noise3New.space = [];%cos(2*pi*0.6
 for i=1:length(signals)
     sig.time = normpdf(0:0.1:(T-1)/10,stim_time(i),1);
 %     [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
-    [projected,components,D,Alpha,output] = tscaFunc(ZZ - mean(ZZ(:)),sig,[noiseNew],[1 -0.2*ones(1,1)],100,1);
+    [projected,components,D,Alpha,output] = tscaFunc(ZZZ - mean(ZZZ(:)),sig,[noiseNew],[1 -0.2*ones(1,1)],100,1);
 %     [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New signals(setdiff(1:5,i))],[1 -0.2*ones(1,7)],100,1);
 %     tscaAnalyze(output,3,[],4,T);
     [correlation(i),I] = max(corr(abs(projected'),sig.time')); % get the index of component with highest correlation to original signal
@@ -142,7 +139,7 @@ for i=1:length(signals)
     mapT(:,:,i) = reshape(temp,40,40);
     [T_MSE(i),T_PSNR(i),T_CNR(i),T_MSSIM(i),T_corr(i),T_CP(i)] = getPerformance(mapT(:,:,i),signals(i).space,signals(i).space~=DC,signals(i).space==DC);
 end
-retinotopicMapTmax = retinotopicMapFromIndividualMaps(mapT,2);
+retinotopicMapTmax = retinotopicMapFromIndividualMaps(mapT,2,'Tmax',80);
 % tmax2 = Anew';
 % tmax2(tmax2>=0) = (tmax2(tmax2>=0)./100+2)./2; tmax22 = zeros(length(tmax2),3);% transform 0,200,400,600,800 to 1,2,3,4,5 
 % tmax22(tmax2>0,:) = colors(tmax2(tmax2>0),:);
