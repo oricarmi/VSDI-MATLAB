@@ -13,7 +13,8 @@ global fs basis params brn cfn
     for i=1:params.experiment.N
         signal.time = params.experiment.theoreticalSigs(i,:); % this stimulus theoretical signal
         [projected,components,~,~,output] = tscaFunc(Z,signal,[noise1],params.TSCA.gammas,params.TSCA.numProj,params.TSCA.reduceComp); % call TSCA with this signal's parameters
-        mapTSCA{i} = postProcess(rshp(components(:,1)));      
+        [~,I] = max(corr(abs(projected(1:9,:)'),signal.time')); % get the index of component with highest correlation to original signal
+        mapTSCA{i} = postProcess(rshp(components(:,I)));      
     end
     mapTSCA = cat(3,mapTSCA{:});
 end

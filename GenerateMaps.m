@@ -63,12 +63,16 @@ switch what
             Z = [Z cfn{i}];
         end
 end 
+if input('Choose noise freqs? [0/1]')
+    ChooseNoiseFreqs(Z);
+end
 % <--- define parameters 
 defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
 % ---->
 ZZ = preProcess(Z);
 implay(rshp(ZZ),20); % play video
 [ZZZ,ZZZZ,ZZZZZ,beta] = GLM_VSDI(ZZ,[0.78 3.3 6.6],params.experiment.theoreticalSigs');
+params.experiment.ZZ = ZZ; params.experiment.ZZZ = ZZZ;
 mapGLM = postProcess(rshp([beta(end-(params.experiment.N-1):end,:)]'));
 mapAOF = AvgOfFrms(rshp(ZZ));
 mapTmax = Tmax(ZZ); 
