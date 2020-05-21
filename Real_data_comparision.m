@@ -22,6 +22,16 @@ end
 % ---->
 [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
 Summary = struct('params',params,'result',result','description','horz left right 2[Hz],200121 n=4'); 
+%% DB index for cluster similarity
+X = cell(8,1); Xraw = cell(8,1); mapp = zeros(size(brn,1),size(brn,2),8);
+for i=1:8
+    [row,col] = find(result.TSCA.maps(:,:,i)>prctile(reshape(result.TSCA.maps(:,:,i),[],1),99));
+    mapp(:,:,i) = result.TSCA.maps(:,:,i)>prctile(reshape(result.TSCA.maps(:,:,i),[],1),99);
+    X{i} = [row,col];
+    Xraw{i} = result.TSCA.maps(row,col,i);
+end
+[R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(Xraw,X);
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% Show Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(0,'DefaultFigureWindowStyle', 'docked');
 addpath('C:\Users\orica\Dropbox\fcns_and_decript');

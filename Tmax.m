@@ -5,7 +5,7 @@ function [mapT] = Tmax(Z)
     refff = [params.experiment.responseSig zeros(1,params.experiment.T-params.experiment.T1)];
     r = zeros(size(Z,1),1); tmax = zeros(size(r));
     for i=1:size(Z,1)
-        [rtemp,lags] = xcorr(Z(i,:),refff);
+        [rtemp,lags] = xcorr(Z(i,:)-mean(Z(i,:)),refff-mean(refff),'normalized');
         [r(i),I] = max(rtemp);
         tmax(i) = lags(I);
     end
@@ -13,7 +13,7 @@ function [mapT] = Tmax(Z)
     tmaxx(r<(mean(r)+params.Tmax.Thresh*std(r))) = -100;
     A = tmaxx;
     [~,responseMax] = max(params.experiment.responseSig);
-    B = [-100, 0:params.experiment.T1:params.experiment.T-params.experiment.T1 + responseMax];
+    B = [-100, responseMax:params.experiment.T1:params.experiment.T];
     [~,I] = min(abs(bsxfun(@minus,A',B')));
     Anew = B(I)';
     mapT = zeros(size(brn,1),size(brn,2),params.experiment.N);
