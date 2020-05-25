@@ -1,12 +1,11 @@
-function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(Xraw,X,qp)
+function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X,qp)
 % Calculate the Davies-Bouldin similarity index
-% input: Xraw - values of clusters
-% X - cell array of clusters. each cell (cluster) - row=observations, cols= dimensions
+% input: X - cell array of clusters. each cell (cluster) - row=observations, cols= dimensions
 % for 2D: 1st column - rows indices of cluster, 2nd column - col indices of cluster
     switch nargin
-        case 2
+        case 1
             q=2;p=2; % default p,q values
-        case 3
+        case 2
             if isempty(qp(1))
                 q = 2;
             end
@@ -22,7 +21,7 @@ function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(Xraw,X,qp)
     S = zeros(k,1); % scatters (rows - clusters, cols - dimensions)
     M = zeros(k); % distance measures
     for i=1:k
-        A(i,:) = calcCentroid(Xraw{i},X{i});
+        A(i,:) = calcCentroid(X{i});
         S(i) = calcSi(X{i},A(i,:),size(X{i},1),q);
     end
 
@@ -54,8 +53,7 @@ end
 function Si = calcSi(X,A,T,q)
     Si = (1/T)*(sum(sum(abs(X-A).^q))).^(1/q);
 end
-function Ai = calcCentroid(Xraw,X)
-    COM = calcCOM(Xraw);
+function Ai = calcCentroid(X)
     Ai = mean(X);
 end
 function Mij = calcM(Ai,Aj,p)

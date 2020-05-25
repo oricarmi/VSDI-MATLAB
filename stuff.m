@@ -1,34 +1,63 @@
-clear;
 addpath('C:\Users\orica\Dropbox\fcns_and_decript');
 addpath('C:\Users\orica\Dropbox\master degree\codes');
-path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparison results';
+path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
 files = dir(path);
-for i=12:length(files)
-    clear bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params; close all; clc;
-    global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
-    load(fullfile(files(i).folder,files(i).name));
-    description = Summary.description; disp(description);
-    fname = input('fname:'); % take from description
-    n = input('n:');
+global brn lgn ump
+brn = zeros(270,327);
+for i=3:length(files) % iterate files
+    load(fullfile(files(i).folder,files(i).name)); % load summary
     result = Summary.result;
-    params = Summary.params;
-    [cf1 cfn trsh0]=strt_up(fname, n);  
+    paramz = Summary.params;
+    optimalMaps = Summary.params.experiment.optimalMaps.orig;
+    N = Summary.params.experiment.N;
+    X = cell(N,7); % cell array of clusters (rows - maps, cols - methods)
     fn = fieldnames(result);
-    for k=1:length(fn) % iterate the methods 
-        for j=1:size(result.(fn{k}).maps,3)
-            result.(fn{k}).maps(:,:,j) = MinMaxNorm((result.(fn{k}).maps(:,:,j)));
+    RR = mean(Summary.params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary.params.experiment.optimalMaps.orig,3),[],1),80);
+    for j=1:length(fn)+1 % iterate the methods and the optimal maps and perform cluster analysis between the maps
+        if j~=length(fn)+1 % if not in optimal maps
+            for k=1:N % iterate the maps of this method
+                thisMap = result.(fn{j}).maps(:,:,k).*double(RR);
+                [row,col] = find(thisMap>prctile(reshape(thisMap,[],1),99));
+%                 mapp(:,:,k) = thisMap>prctile(reshape(thisMap,[],1),99);
+                X{k,j} = [row,col];
+            end
+            [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X(:,j));
+            result.(fn{j}).clusterEval.R = R;
+            result.(fn{j}).clusterEval.dbs = dbs;
+            result.(fn{j}).clusterEval.dbsI = dbsI;
+            result.(fn{j}).clusterEval.dbns = dbns;
+            result.(fn{j}).clusterEval.dbnsI = dbnsI;
+            result.(fn{j}).clusterEval.DBI = DBI;
+        else % it is optimal maps
+            for k=1:N % iterate the optimal maps
+                [row,col] = find(optimalMaps(:,:,k)>prctile(reshape(optimalMaps(:,:,k),[],1),99));
+%                 mapp(:,:,k) = optimalMaps(:,:,k)>prctile(reshape(optimalMaps(:,:,k),[],1),99);
+                X{k,j} = [row,col];
+            end
+            [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X(:,j));
+            paramz.experiment.optimalMaps.clusterEval.R = R;
+            paramz.experiment.optimalMaps.clusterEval.dbs = dbs;
+            paramz.experiment.optimalMaps.clusterEval.dbsI = dbsI;
+            paramz.experiment.optimalMaps.clusterEval.dbns = dbns;
+            paramz.experiment.optimalMaps.clusterEval.dbnsI = dbnsI;
+            paramz.experiment.optimalMaps.clusterEval.DBI = DBI;
         end
-        [~,result.(fn{k}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{k}).maps,5,fn{k});
     end
-    [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
-    isGood = input('is good?');
-    if isGood
-        Summary = struct('params',params,'result',result','description',description);
-        [file,path] = uiputfile;
-        save(fullfile(path,file),'Summary');
-    end
+    for k=1:N % iterate the maps and perform cluster analysis between the methods
+        [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X{k,:});
+        result.clusterEvalAll{k}.R = R;
+        result.clusterEvalAll{k}.dbs = dbs;
+        result.clusterEvalAll{k}.dbsI = dbsI;
+        result.clusterEvalAll{k}.dbns = dbns;
+        result.clusterEvalAll{k}.dbnsI = dbnsI;
+        result.clusterEvalAll{k}.DBI = DBI;
+    end 
+    Summary.result = result;
+    Summary.params = paramz;
+    uisave('Summary',Summary.description)
 end
-%%
+
+%% calc real snr
 ZSig = zeros(m*m,T); % preallocate memory
 for i = 1:T
     ZSig(:,i) = reshape( ...

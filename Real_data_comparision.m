@@ -30,7 +30,7 @@ for i=1:8
     X{i} = [row,col];
     Xraw{i} = result.TSCA.maps(row,col,i);
 end
-[R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(Xraw,X);
+[R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X);
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% Show Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(0,'DefaultFigureWindowStyle', 'docked');
