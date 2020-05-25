@@ -1,7 +1,7 @@
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% GENERAL %%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all; close all; clc;
 % fname = "G:\2020.01.21\m200121.mat"; n=4;
-fname = "E:\2018.12.18\MAT\m181218.mat"; n=1;
+fname = "E:\2018.12.18\MAT\m181218.mat"; n=4;
 % fname = "G:\191119\m191119.mat"; n=2;
 % fname = "G:\180904\m180904.mat"; n=2;
 % fname = "D:\2019.07.10\m190710.mat"; n=2;
@@ -21,7 +21,8 @@ for i=1:length(fn) % iterate the methods
 end
 % ---->
 [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
-Summary = struct('params',params,'result',result','description','horz left right 2[Hz],200121 n=4'); 
+result = clusterEvaluation(result);
+Summary = struct('params',params,'result',result','description','loc 8,181218 n=4'); 
 %% DB index for cluster similarity
 X = cell(8,1); Xraw = cell(8,1); mapp = zeros(size(brn,1),size(brn,2),8);
 for i=1:8

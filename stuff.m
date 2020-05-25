@@ -1,10 +1,14 @@
 addpath('C:\Users\orica\Dropbox\fcns_and_decript');
 addpath('C:\Users\orica\Dropbox\master degree\codes');
 path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparison results';
 files = dir(path);
 global brn lgn ump
 brn = zeros(270,327);
-for i=3:length(files) % iterate files
+for i=7:length(files) % iterate files
+    if contains(files(i).name,'181218')
+        continue
+    end
     load(fullfile(files(i).folder,files(i).name)); % load summary
     result = Summary.result;
     paramz = Summary.params;
@@ -44,7 +48,7 @@ for i=3:length(files) % iterate files
         end
     end
     for k=1:N % iterate the maps and perform cluster analysis between the methods
-        [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X{k,:});
+        [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X(k,:));
         result.clusterEvalAll{k}.R = R;
         result.clusterEvalAll{k}.dbs = dbs;
         result.clusterEvalAll{k}.dbsI = dbsI;
