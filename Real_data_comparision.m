@@ -1,7 +1,8 @@
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% GENERAL %%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all; close all; clc;
 % fname = "G:\2020.01.21\m200121.mat"; n=4;
-fname = "E:\2018.12.18\MAT\m181218.mat"; n=4;
+% fname = "E:\2018.12.18\MAT\m181218.mat"; n=4;
+fname = "F:\2018.02.05\MAT\m180205.mat"; n=5;
 % fname = "G:\191119\m191119.mat"; n=2;
 % fname = "G:\180904\m180904.mat"; n=2;
 % fname = "D:\2019.07.10\m190710.mat"; n=2;
@@ -13,7 +14,7 @@ addpath('C:\Users\orica\Dropbox\master degree\codes');
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 result = struct('TSCA',struct,'Tmax',struct,'AOF',struct,'Corr',struct,'GLM',struct,'Nadav',struct);
-[result.TSCA.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps] = GenerateMaps(fname,n,8); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
+[result.TSCA.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps] = GenerateMaps(fname,n,52); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
 % <----- generate retinotopic maps from the individual maps
 fn = fieldnames(result);
 for i=1:length(fn) % iterate the methods 
@@ -22,7 +23,7 @@ end
 % ---->
 [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
 result = clusterEvaluation(result);
-Summary = struct('params',params,'result',result','description','loc 8,181218 n=4'); 
+Summary = struct('params',params,'result',result','description','loc 5 2Hz,180205 n=3'); 
 %% DB index for cluster similarity
 X = cell(8,1); Xraw = cell(8,1); mapp = zeros(size(brn,1),size(brn,2),8);
 for i=1:8

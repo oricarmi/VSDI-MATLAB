@@ -41,7 +41,15 @@ global params lgn
                     caxis(cAxis);
                 end
             end
-
+        case 52
+            index2plot = [7,3,1,9,5];
+            for i=1:5
+                subplot(3,3,index2plot(i));
+                imagesc(map(:,:,i));title(lgn(i+2,:));
+                if CA
+                    caxis(cAxis);
+                end
+            end
         otherwise % moving bars 2[Hz]
             for i=1:9
                 subplot(3,3,i)

@@ -6,10 +6,10 @@ function defineParameters(paramsFilePath,what,Z)
     params.experiment.what = what;
     params.experiment.Z = Z;
     prms = readtable(paramsFilePath);
-    if what == 8
-        params.experiment.N = 8;
-    else
-        params.experiment.N = 9;
+    if what <10
+        params.experiment.N = what; % loc 8 or loc 9 or loc 4
+    else % what >10
+        params.experiment.N = (what-2)/10; % it is #2 (the 2 indicating it is 2 hz)
     end
     if what/10<1 % 1 hz experiments
         params.experiment.responseSig = load('responseSig.mat').responseSig;

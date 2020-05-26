@@ -70,7 +70,14 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
                     set(gca,'Color',colorz(1,i,:));
                     title(lgn(i+2,:));
                 end
-            otherwise % sweep
+            case 52 % loc 5 @2Hz
+                index2plot = [7,3,1,9,5];
+                for i=1:length(colorz)
+                    subplot(3,3,index2plot(i));
+                    set(gca,'Color',colorz(1,i,:));
+                    title(lgn(i+2,:));
+                end
+            otherwise % sweep @2Hz
                 imagesc(colorz); 
         end
     end
