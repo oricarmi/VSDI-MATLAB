@@ -197,4 +197,5 @@ for i=1:6 % iterate the 6 performance measures
    imagesc(reshape(retMaps{i},40,40,3)); title([Title2{i} ' Retinotopic Map']);  
 end
 thisSNR_Summary = struct('runSummary',runSummary,'TSCA',TSCA,'Tmax',Tmax,'AOF',ORIG,'Corr',Corr,'GLM',GLM,'Nadav',NADAV,'retMaps',retMaps);
+uisave(thisSNR_Summary,['Simulation Summary - NoiseSig = ' noiseSig(kk)]); 
 end
