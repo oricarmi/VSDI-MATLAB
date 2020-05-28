@@ -11,7 +11,7 @@ global params lgn
         map = cat(3,map{:});
     end 
     figure("name",sprintf('indMaps %s', Ttle)); 
-    suptitle([Ttle ", caxis: " num2str(CA)]);
+    suptitle([Ttle]);% ", caxis: " num2str(CA)]);
     cAxis = [prctile(map(:),1) prctile(map(:),100)];
     switch params.experiment.what
         case 8

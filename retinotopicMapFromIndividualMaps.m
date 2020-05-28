@@ -44,41 +44,43 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
     else % real data
         retinotopicMap = hsv2rgb(maxind/length(unique(maxind)),ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         retinotopicMap2 = squeeze(retinotopicMap); retinotopicMap2(sum(retinotopicMap2,2)==0,:) = tempbrn(sum(retinotopicMap2,2)==0,:); % make brain background instead of black
-        figure("name",sprintf('retMap %s',Ttle));imagesc(ump.*[0:size(brn,2)-1]./1000, ump.*[0:size(brn,1)-1]./1000,reshape(retinotopicMap2,size(maps,1),size(maps,2),3));title(Ttle); %
-%         figure;imagesc(reshape(retinotopicMap2,size(map,1),size(map,2),3));title(Ttle); 
-        colorz = hsv2rgb([1:length(unique(maxind))]./length(unique(maxind)),ones(1,length(unique(maxind))),ones(1,length(unique(maxind))));
-        figure("name",sprintf('colorCode %s', Ttle))
-        switch params.experiment.what  
-            case 8 % loc 8
-                index2plot = [11,3,15,7,5,13,1,9]; % 8 locs
-                for i=1:length(colorz)
-                    subplot(3,5,index2plot(i));
-                    set(gca,'Color',colorz(1,i,:));
-                    title(lgn(i+2,:));
-                end
-            case 9  % loc 9
-                index2plot = [5,7,3,8,2,9,1,6,4];
-                for i=1:length(colorz)
-                    subplot(3,3,index2plot(i));
-                    set(gca,'Color',colorz(1,i,:));
-                    title(lgn(i+1,:));
-                end
-            case 4 % loc 4
-                index2plot = [3,2,1,4];
-                for i=1:length(colorz)
-                    subplot(2,2,index2plot(i));
-                    set(gca,'Color',colorz(1,i,:));
-                    title(lgn(i+2,:));
-                end
-            case 52 % loc 5 @2Hz
-                index2plot = [7,3,1,9,5];
-                for i=1:length(colorz)
-                    subplot(3,3,index2plot(i));
-                    set(gca,'Color',colorz(1,i,:));
-                    title(lgn(i+2,:));
-                end
-            otherwise % sweep @2Hz
-                imagesc(colorz); 
+        if weights
+            figure("name",sprintf('retMap %s',Ttle));imagesc(ump.*[0:size(brn,2)-1]./1000, ump.*[0:size(brn,1)-1]./1000,reshape(retinotopicMap2,size(maps,1),size(maps,2),3));title(Ttle); %
+    %         figure;imagesc(reshape(retinotopicMap2,size(map,1),size(map,2),3));title(Ttle); 
+            colorz = hsv2rgb([1:length(unique(maxind))]./length(unique(maxind)),ones(1,length(unique(maxind))),ones(1,length(unique(maxind))));
+            figure("name",sprintf('colorCode %s', Ttle))
+            switch params.experiment.what  
+                case 8 % loc 8
+                    index2plot = [11,3,15,7,5,13,1,9]; % 8 locs
+                    for i=1:length(colorz)
+                        subplot(3,5,index2plot(i));
+                        set(gca,'Color',colorz(1,i,:));
+                        title(lgn(i+2,:));
+                    end
+                case 9  % loc 9
+                    index2plot = [5,7,3,8,2,9,1,6,4];
+                    for i=1:length(colorz)
+                        subplot(3,3,index2plot(i));
+                        set(gca,'Color',colorz(1,i,:));
+                        title(lgn(i+1,:));
+                    end
+                case 4 % loc 4
+                    index2plot = [3,2,1,4];
+                    for i=1:length(colorz)
+                        subplot(2,2,index2plot(i));
+                        set(gca,'Color',colorz(1,i,:));
+                        title(lgn(i+2,:));
+                    end
+                case 52 % loc 5 @2Hz
+                    index2plot = [7,3,1,9,5];
+                    for i=1:length(colorz)
+                        subplot(3,3,index2plot(i));
+                        set(gca,'Color',colorz(1,i,:));
+                        title(lgn(i+2,:));
+                    end
+                otherwise % sweep @2Hz
+                    imagesc(colorz); 
+            end
         end
     end
 end

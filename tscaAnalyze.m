@@ -36,7 +36,7 @@ figure;suptitle([Title ' time course, gammas: ' num2str(tscaStruct.gammas)]);
 for i=1:numComp^2
     subplot(numComp,numComp,i); hold on;
     plot(abs(tscaStruct.projected(i,:))); xlabel('time [sec]');ylabel('amplitude');
-    title(['\phi = ' num2str(i)]);
+    title(['$\phi$ = ' num2str(i)]);
     for j=1:10
         xline(i);
     end
@@ -54,5 +54,5 @@ end
 figure;suptitle('autocorrelation matrices - 1st is signal')
 for i=1:size(tscaStruct.C,3)
     subplot(1,size(tscaStruct.C,3),i);
-    imagesc(tscaStruct.C(:,:,i));colormap(jet);colorbar('southoutside');
+    imagesc(tscaStruct.C(:,:,i));colorbar('southoutside');
 end

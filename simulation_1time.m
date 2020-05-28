@@ -20,15 +20,15 @@ DC = 0.02;
 figure;ind2plot = [1,5,9,13,17];
 amp = rand(1,5)*2; % [1.63 1.81 0.25 1.83 1.26
 for i=1:5
-    signals(i).time = amp(i)/0.4*normpdf(0:0.1:(T-1)/10,stim_time(i),1);
+    signals(i).time = 50.*amp(i)/0.4*normpdf(0:0.1:(T-1)/10,stim_time(i),1);
     signals(i).space = imgaussfilt(double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2),sqrt(r))+DC; % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
-    subplot(3,6,ind2plot(i)) 
-    imagesc(signals(i).space); colormap(gray);
-    title(['sig. ' num2str(i) ' - spatial']);
-    subplot(3,6,ind2plot(i)+1)
-    plot(signals(i).time);
-    title(['sig. ' num2str(i) ' - temporal']);
-    xticks([0 100:200:T]);
+%     subplot(3,6,ind2plot(i)) 
+%     imagesc(signals(i).space); colormap(gray);
+%     title(['sig. ' num2str(i) ' - spatial']);
+%     subplot(3,6,ind2plot(i)+1)
+%     plot(signals(i).time);
+%     title(['sig. ' num2str(i) ' - temporal']);
+%     xticks([0 100:200:T]);
 end
 % figure;imagesc(signals(1).space +signals(2).space +signals(3).space +signals(4).space +signals(5).space);
 %% construct noise
@@ -88,14 +88,14 @@ end
 retinotopicMapOrig = retinotopicMapFromIndividualMaps(mapORIG,2);
 %% ============================= TSCA ===================================
 noiseNew.time = eye(T)/T; noiseNew.space = []; map = zeros(m,m,length(signals));
-noise2New.time = createToeplitz(0.67,0.1,1,1,T); noise2New.space = [];%cos(2*pi*3.*t')+normrnd(0,noiseSig/2,T,1);
-noise3New.time = createToeplitz(3,0.1,1,1,T); noise3New.space = [];%cos(2*pi*0.67.*t')+normrnd(0,noiseSig/2,T,1);
+noise2New.time = cos(2*pi*3.*t'); noise2New.space = [];%createToeplitz(0.67,0.1,1,1,T)+normrnd(0,noiseSig/2,T,1);
+noise3New.time = cos(2*pi*0.67.*t'); noise3New.space = [];%createToeplitz(3,0.1,1,1,T)+normrnd(0,noiseSig/2,T,1);
 for i=1:length(signals)
     sig.time = normpdf(0:0.1:(T-1)/10,stim_time(i),1);
-%     [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
-    [projected,components,D,Alpha,output] = tscaFunc(ZZZ - mean(ZZZ(:)),sig,[noiseNew],[1 -0.2*ones(1,1)],100,1);
+    [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New],[1 -0.25*ones(1,3)],100,1);
+%     [projected,components,D,Alpha,output] = tscaFunc(ZZZ - mean(ZZZ(:)),sig,[noiseNew],[1 -0.2*ones(1,1)],100,1);
 %     [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New signals(setdiff(1:5,i))],[1 -0.2*ones(1,7)],100,1);
-%     tscaAnalyze(output,3,[],4,T);
+%     tscaAnalyze(output,3,[],0,T);
     [correlation(i),I] = max(corr(abs(projected'),sig.time')); % get the index of component with highest correlation to original signal
     map(:,:,i) = abs(reshape(components(:,I),m,m));
     [tscaMSE(i),tscaPSNR(i),tscaCNR(i),tscaMSSIM(i),tscaCorr(i),tscaCP(i)] = getPerformance(map(:,:,i),signals(i).space,signals(i).space~=DC,signals(i).space==DC);

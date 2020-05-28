@@ -2,7 +2,7 @@
 clear all; close all; clc;
 % fname = "G:\2020.01.21\m200121.mat"; n=4;
 % fname = "E:\2018.12.18\MAT\m181218.mat"; n=4;
-fname = "F:\2018.02.05\MAT\m180205.mat"; n=5;
+fname = "E:\191119\m191119.mat"; n=2;
 % fname = "G:\191119\m191119.mat"; n=2;
 % fname = "G:\180904\m180904.mat"; n=2;
 % fname = "D:\2019.07.10\m190710.mat"; n=2;
@@ -11,14 +11,16 @@ fname = "F:\2018.02.05\MAT\m180205.mat"; n=5;
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
 addpath("C:\Users\orica\Dropbox\fcns_and_decript");
 addpath('C:\Users\orica\Dropbox\master degree\codes');
+addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
+addpath("C:\Users\Ori\Dropbox\master degree\codes")
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 result = struct('TSCA',struct,'Tmax',struct,'AOF',struct,'Corr',struct,'GLM',struct,'Nadav',struct);
-[result.TSCA.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps] = GenerateMaps(fname,n,52); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
+[result.TSCA.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps] = GenerateMaps(fname,n,8); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
 % <----- generate retinotopic maps from the individual maps
 fn = fieldnames(result);
 for i=1:length(fn) % iterate the methods 
-    [~,result.(fn{i}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,8,fn{i});
+    [~,result.(fn{i}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,52,fn{i});
 end
 % ---->
 [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
@@ -35,17 +37,20 @@ end
 [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X);
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% Show Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-set(0,'DefaultFigureWindowStyle', 'docked');
 addpath('C:\Users\orica\Dropbox\fcns_and_decript');
 addpath('C:\Users\orica\Dropbox\master degree\codes');
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 description = Summary.description;
-fname = "G:\180904\m180904.mat";n=4; % take from description
+fname = "E:\181218\m181218.mat";n=1; % take from description
 result = Summary.result;
 params = Summary.params;
 [cf1 cfn trsh0]=strt_up(fname, n);  
 fn = fieldnames(result);
-for i=1:length(fn) % iterate the methods 
-    retinotopicMapFromIndividualMaps(result.(fn{i}).maps,5,fn{i},93);
-    plotMaps(result.(fn{i}).maps,fn{i},1);
+retmapsAll = figure("name","retmapsAll");
+indmapsAll = figure("name","indmapsAll");
+for i=1:length(fn)-1 % iterate the methods    
+    figure(retmapsAll); subplot(2,3,i)
+    [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},93);
+    imf2(r); title(fn{i});
+%     r = plotMaps(result.(fn{i}).maps,fn{i},1);
 end

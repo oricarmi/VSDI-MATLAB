@@ -67,7 +67,11 @@ if input('Choose noise freqs? [0/1]')
     ChooseNoiseFreqs(Z);
 end
 % <--- define parameters 
-defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
+try
+    defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
+catch
+    defineParameters("C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
+end
 % ---->
 ZZ = preProcess(Z);
 % implay(rshp(ZZ),20); % play video

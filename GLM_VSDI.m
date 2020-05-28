@@ -4,7 +4,7 @@ function [Signal1,Signal2,Signal3,beta] = GLM_VSDI(Z,noiseFreqs,basis)
     global fs brn
     T = size(Z,2); % total time
     Z = Z';
-    t = [linspace(0,(T-1)/fs,T)]'; % time vector
+    t = [linspace(0,(T-1)./fs,T)]'; % time vector
     X1 = ones(T,1); % DC
     Xn = zeros(T,length(noiseFreqs)*2);
     k = 1;
