@@ -36,18 +36,23 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
         [maxmap,maxind] = max(B,[],3); maxmap = maxmap(:); maxind = maxind(:); % get maximum of each pixel (value and index) after weighting
     end
     if size(maps,1)==40 % simulation
-        retinotopicMap = hsv2rgb(maxind/length(unique(maxind)),ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*(maxmap-min(maxmap))./(max(maxmap)-min(maxmap))); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
+        retinotopicMap = hsv2rgb(maxind/5,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*(maxmap-min(maxmap))./(max(maxmap)-min(maxmap))); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         if weights
             figure;imagesc(reshape(retinotopicMap,size(maps,1),size(maps,2),3));title(Ttle); %
-            figure;imagesc(hsv2rgb([1:length(unique(maxind))]./length(unique(maxind)),ones(1,length(unique(maxind))),ones(1,length(unique(maxind)))));
+            figure;imagesc(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
         end
     else % real data
-        retinotopicMap = hsv2rgb(maxind/length(unique(maxind)),ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
+        retinotopicMap = hsv2rgb(maxind/params.experiment.N,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         retinotopicMap2 = squeeze(retinotopicMap); retinotopicMap2(sum(retinotopicMap2,2)==0,:) = tempbrn(sum(retinotopicMap2,2)==0,:); % make brain background instead of black
         if weights
-            figure("name",sprintf('retMap %s',Ttle));imagesc(ump.*[0:size(brn,2)-1]./1000, ump.*[0:size(brn,1)-1]./1000,reshape(retinotopicMap2,size(maps,1),size(maps,2),3));title(Ttle); %
+            figure("name",sprintf('retMap %s',Ttle));
+            imf2(retinotopicMap2);
+            if contains(Ttle,'nad','IgnoreCase',true)
+                Ttle = 'M.P.T';
+            end
+            title(Ttle);
     %         figure;imagesc(reshape(retinotopicMap2,size(map,1),size(map,2),3));title(Ttle); 
-            colorz = hsv2rgb([1:length(unique(maxind))]./length(unique(maxind)),ones(1,length(unique(maxind))),ones(1,length(unique(maxind))));
+            colorz = hsv2rgb([1:params.experiment.N]./params.experiment.N,ones(1,params.experiment.N),ones(1,params.experiment.N));
             figure("name",sprintf('colorCode %s', Ttle))
             switch params.experiment.what  
                 case 8 % loc 8

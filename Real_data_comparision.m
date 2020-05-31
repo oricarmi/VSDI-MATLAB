@@ -41,7 +41,8 @@ addpath('C:\Users\orica\Dropbox\fcns_and_decript');
 addpath('C:\Users\orica\Dropbox\master degree\codes');
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 description = Summary.description;
-fname = "E:\181218\m181218.mat";n=1; % take from description
+% fname = "E:\181218\m181218.mat";n=1; % take from description
+fname = "E:\200121\m200121.mat"; n=5;
 result = Summary.result;
 params = Summary.params;
 [cf1 cfn trsh0]=strt_up(fname, n);  
@@ -51,6 +52,11 @@ indmapsAll = figure("name","indmapsAll");
 for i=1:length(fn)-1 % iterate the methods    
     figure(retmapsAll); subplot(2,3,i)
     [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},93);
-    imf2(r); title(fn{i});
+    imf2(r); 
+    if ~contains(fn{i},'nadav','ignorecase',true)
+        title(fn{i});
+    else
+        title('M.P.T');
+    end
 %     r = plotMaps(result.(fn{i}).maps,fn{i},1);
 end
