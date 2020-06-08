@@ -12,14 +12,14 @@ stim_time = 10:20:90;
 noiseSig = [0 0.1 0.3 0.5 1];
 t = linspace(0,(T-1)/fs,T);
 for kk = 1:length(noiseSig) % iterate different noise sig
-runSummary = cell(6,20);
+runSummary = cell(6,40);
 retinotopicMapTSCA = zeros(m*m,3); % preallocate 40x40x3(hsv)
 retinotopicMapTmax = zeros(m*m,3); % preallocate 40x40x3(hsv)
 retinotopicMapOrig = zeros(m*m,3); % preallocate 40x40x3(hsv)
 retinotopicMapCorr = zeros(m*m,3); % preallocate 40x40x3(hsv)
 retinotopicMapGLM = zeros(m*m,3); % preallocate 40x40x3(hsv)
 retinotopicMapNADAV = zeros(m*m,3); % preallocate 40x40x3(hsv)
-for k=1:20
+for k=1:size(runSummary,2)
 %% construct signals
 [I,J] = ndgrid(1:m,1:m); r = 4; 
 % locs = [0.25 0.25; 0.25 0.75; 0.5 0.5; 0.75 0.25; 0.75 0.75]; 
@@ -199,7 +199,7 @@ for i=1:6 % iterate the 6 performance measures
     figure(kk*10);
     subplot(2,3,i) 
     boxplot([squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
-        squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2))],char({'tsca';'T';'Nadav';'AOF';'Corr';'GLM'}));
+        squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2))],char({'TSCA';'T';'Nadav';'AOF';'Corr';'GLM'}));
     title(Title{i});
    figure(kk*100);
    subplot(2,3,i)

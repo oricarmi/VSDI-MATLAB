@@ -76,3 +76,15 @@ for i = 1:T
         noises(2).time(i)*noises(2).space+...
         noises(3).time(i)*noises(3).space,[],1);
 end
+%%
+addpath('C:\Users\orica\Dropbox\fcns_and_decript');
+addpath('C:\Users\orica\Dropbox\master degree\codes');
+path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+% path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparison results';
+files = dir(path);
+global brn lgn ump
+brn = zeros(270,327);
+allPerformance = []; allDBI = [];
+for i=3:length(files) % iterate files
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary.result;

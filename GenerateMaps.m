@@ -1,9 +1,8 @@
-function [mapTSCA,mapTmax,mapAOF,mapCorr,mapGLM,mapNadav] = GenerateMaps(fname,n,what)
+function [mapTSCA,mapTmax,mapAOF,mapCorr,mapGLM,mapNadav,mapTSCAboth] = GenerateMaps(fname,n,what)
 % A function that generates maps from all methods
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 basis params
 [cf1 cfn trsh0]=strt_up(fname, n);  
-prompt = 'Whole Brain? [0,1]';
-allBrn = input(prompt);
+allBrn = input('Whole Brain? [0,1]');
 if allBrn == 0
    cfn=pk_zn2(cfn,2);
 end
@@ -68,20 +67,21 @@ if input('Choose noise freqs? [0/1]')
 end
 % <--- define parameters 
 try
-    defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
+    defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z)); % personal pc
 catch
-    defineParameters("C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\VSDI-MATLAB\paramsori.csv",what,rshp(Z));
+    defineParameters("C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\VSDI-MATLAB\paramsori.csv",what,rshp(Z)); % lab pc
 end
 % ---->
 ZZ = preProcess(Z);
-% implay(rshp(ZZ),20); % play video
+implay(rshp(ZZ),20); % play video
 [ZZZ,ZZZZ,ZZZZZ,beta] = GLM_VSDI(ZZ,[0.78 3.3 6.6],params.experiment.theoreticalSigs');
 params.experiment.ZZ = ZZ; params.experiment.ZZZ = ZZZ;
 mapGLM = postProcess(rshp([beta(end-(params.experiment.N-1):end,:)]'));
 mapAOF = AvgOfFrms(rshp(ZZ));
 mapTmax = Tmax(ZZ); 
 mapCorr = Correlation2All(ZZ);
-mapTSCA = genTSCA(ZZZ); 
+[mapTSCAboth] = genTSCA(ZZ,ZZZ);
+mapTSCA = mapTSCAboth.withGLM;
 vc(2)=0; xs=[0.3 1]; %% remove limits and title from plots if vc(2)=1 and show scale xs=[x y]
 vc(3)=1; %show reject/anti wave if vc(3)=1;
 plt_on=0; cnd=[];  s_flt=[params.post.gaussfltSTD 2]; t_flt = [];
@@ -95,5 +95,5 @@ cfn2 = cell(Until,1);
 for i=1:Until
     cfn2{i} = ZZ(:,(i-1)*params.experiment.T1+1:i*params.experiment.T1);
 end
-[mxc rxc]=xp_mp(cfn2, cnd, params.Nadav.p, params.Nadav.x, params.Nadav.t_lmts, params.Nadav.settle,  t_flt, s_flt);
+[mxc rxc]=xp_mp(cfn, cnd, params.Nadav.p, params.Nadav.x, params.Nadav.t_lmts, params.Nadav.settle,  t_flt, s_flt);
 mapNadav = postProcess(rshp(mxc(:,end-Until+1:end)));

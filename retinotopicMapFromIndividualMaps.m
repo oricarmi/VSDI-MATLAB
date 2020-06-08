@@ -60,6 +60,7 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
                     for i=1:length(colorz)
                         subplot(3,5,index2plot(i));
                         set(gca,'Color',colorz(1,i,:));
+                        set(gca,'xtick',[]);set(gca,'ytick',[]);
                         title(lgn(i+2,:));
                     end
                 case 9  % loc 9
@@ -67,6 +68,7 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
                     for i=1:length(colorz)
                         subplot(3,3,index2plot(i));
                         set(gca,'Color',colorz(1,i,:));
+                        set(gca,'xtick',[]);set(gca,'ytick',[]);
                         title(lgn(i+1,:));
                     end
                 case 4 % loc 4
@@ -74,6 +76,7 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
                     for i=1:length(colorz)
                         subplot(2,2,index2plot(i));
                         set(gca,'Color',colorz(1,i,:));
+                        set(gca,'xtick',[]);set(gca,'ytick',[]);
                         title(lgn(i+2,:));
                     end
                 case 52 % loc 5 @2Hz
@@ -81,10 +84,12 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
                     for i=1:length(colorz)
                         subplot(3,3,index2plot(i));
                         set(gca,'Color',colorz(1,i,:));
+                        set(gca,'xtick',[]);set(gca,'ytick',[]);
                         title(lgn(i+2,:));
                     end
                 otherwise % sweep @2Hz
                     imagesc(colorz); 
+                    set(gca,'ytick',[]);
             end
         end
     end
