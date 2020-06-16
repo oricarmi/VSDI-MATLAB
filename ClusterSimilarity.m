@@ -24,7 +24,6 @@ function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X,qp)
         A(i,:) = calcCentroid(X{i});
         S(i) = calcSi(X{i},A(i,:),size(X{i},1),q);
     end
-
     for i = 1:k
         for j = i+1:k
             M(i,j) = calcM(A(i,:),A(j,:),p);

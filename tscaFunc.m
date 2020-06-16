@@ -41,7 +41,6 @@ for i=1:N % calculate matrix inner products between the autocorrelation matrices
     Vec(i) = gamma(i)*trace(C(:,:,i));
 end
 Alpha = MAT^(-1)*Vec'; % calculate alpha values
-% Alpha = [MatIP(Cx,Cx) MatIP(Cy,Cx); MatIP(Cx,Cy) MatIP(Cy,Cy)]^(-1)*[gammaX*trace(Cx);gammaY*trace(Cy)];
 Q = zeros(T);
 for i=1:length(Alpha) % construct Q matrix
     Q = Q + Alpha(i)*C(:,:,i);

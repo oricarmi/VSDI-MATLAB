@@ -1,7 +1,7 @@
 function [CNR] = calcCNR(rec,ROI,offROI)
 % Calculate CNR according to pixels of roi and background (offroi)
     t = rec(logical(ROI)); r = rec(logical(offROI));
-    mu_t = mean(t(:)); mu_r = var(r(:)); 
+    mu_t = mean(t(:)); mu_r = mean(r(:)); 
     if mu_t<mu_r
         CNR = -100;
         return

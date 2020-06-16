@@ -36,9 +36,9 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
         [maxmap,maxind] = max(B,[],3); maxmap = maxmap(:); maxind = maxind(:); % get maximum of each pixel (value and index) after weighting
     end
     if size(maps,1)==40 % simulation
-        retinotopicMap = hsv2rgb(maxind/5,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*(maxmap-min(maxmap))./(max(maxmap)-min(maxmap))); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
+        retinotopicMap = squeeze(hsv2rgb(maxind/5,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*(maxmap-min(maxmap))./(max(maxmap)-min(maxmap)))); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         if weights
-            figure;imagesc(reshape(retinotopicMap,size(maps,1),size(maps,2),3));title(Ttle); %
+            figure;imagesc(reshape(retinotopicMap,size(maps,1),size(maps,2),3));title(Ttle); 
             figure;imagesc(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
         end
     else % real data
