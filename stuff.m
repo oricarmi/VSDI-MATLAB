@@ -113,6 +113,29 @@ for i=1:size(totalAOF,2) % iterate the 6 performance measures
         char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
     title(Title{i});
 end
+%% summarize all cluster analysis real data
+path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+files = dir(path);
+totalTSCA = []; totalTmax = []; totalAOF = []; totalCorr = []; totalGLM = []; totalNadav = [];
+for i=3:length(files) % iterate files
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary.result;
+    for j=1:Summary.params.experiment.N
+        totalTSCA = [totalTSCA;Summary.result.clusterEvalAll{j}.R(1,end)];
+        totalTmax = [totalTmax;Summary.result.clusterEvalAll{j}.R(2,end)];
+        totalAOF = [totalAOF;Summary.result.clusterEvalAll{j}.R(3,end)];
+        totalCorr = [totalCorr;Summary.result.clusterEvalAll{j}.R(4,end)];
+        totalGLM = [totalGLM;Summary.result.clusterEvalAll{j}.R(5,end)];
+        totalNadav = [totalNadav;Summary.result.clusterEvalAll{j}.R(6,end)];
+    end
+Title = {'MSE','PSNR','CNR','MSSIM','Corr','CP'};
+Title2 = {'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'};
+figure;
+boxplot([totalTSCA,totalTmax,totalAOF,totalCorr,totalGLM,totalNadav],...
+    char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
+title('Cluster Evaluation');
+end
+
 %% save video
 figure; 
 for l=1:size(ZtoWrite,3)
@@ -150,6 +173,7 @@ for m=3:length(files)
         imagesc(reshape(retMaps{i},40,40,3)); title([Title2{i} ' Retinotopic Map']);
     end
 end
+
 %% computation time
 addpath("C:\Users\orica\Dropbox\fcns_and_decript");
 addpath('C:\Users\orica\Dropbox\master degree\codes');

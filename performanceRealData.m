@@ -14,11 +14,15 @@ global params
                 frame = input("select frame for this stimulus: ");
             end
             [params.experiment.optimalMaps.orig(:,:,i),params.experiment.optimalMaps.ROI(:,:,i),params.experiment.optimalMaps.offROI(:,:,i)] = createOrig(params.experiment.Z(:,:,frame));
+            params.experiment.optimalMaps.orig(:,:,i) = MinMaxNorm(params.experiment.optimalMaps.orig(:,:,i)); % rescale to [0,1]
         end
     end
     fn = fieldnames(result);
     performances = cell(1,length(fn)); 
     for i=1:length(fn) % iterate the methods 
+        if contains(fn{i},'cluster')
+            continue
+        end
         thisPerformance = zeros(params.experiment.N,6); % number of maps x 6 performance measures
         for j=1:params.experiment.N % iterate the maps in each method
             [MSE,PSNR,CNR,mssim,Corr,CP] = getPerformance(result.(fn{i}).maps(:,:,j),params.experiment.optimalMaps.orig(:,:,j),params.experiment.optimalMaps.ROI(:,:,j),params.experiment.optimalMaps.offROI(:,:,j));

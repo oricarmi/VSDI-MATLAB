@@ -21,8 +21,6 @@ result = struct('TSCA',struct,'Tmax',struct,'AOF',struct,'Corr',struct,'GLM',str
 [result.TSCA.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps,tscaBoth] = GenerateMaps(fname,n,8); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
 % <----- generate retinotopic maps from the individual maps
 fn = fieldnames(result);
-% retinotopicMapFromIndividualMaps(result.TSCA.maps.noGLM,5,'no glm');
-% retinotopicMapFromIndividualMaps(result.TSCA.maps.withGLM,5,'with glm');
 for i=1:length(fn) % iterate the methods 
     [~,result.(fn{i}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,1,fn{i});
 end
@@ -48,8 +46,8 @@ addpath("C:\Users\Ori\Dropbox\master degree\codes")
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 description = Summary.description;
 % fname = "E:\191119\m191119.mat";n=2; % take from description
-% fname = "E:\180905\m180905.mat"; n=2;
-fname = "E:\200121\m200121.mat"; n=5;
+fname = "E:\181218\m181218.mat"; n=3;
+% fname = "E:\200121\m200121.mat"; n=5;
 result = Summary.result;
 params = Summary.params;
 [cf1 cfn trsh0]=strt_up(fname, n);  
@@ -58,7 +56,7 @@ retmapsAll = figure("name","retmapsAll");
 indmapsAll = figure("name","indmapsAll");
 for i=1:length(fn) % iterate the methods    
     figure(retmapsAll); subplot(2,3,i)
-    [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},95);
+    [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},90);
     imf2(r); 
     if ~contains(fn{i},'nadav','ignorecase',true)
         title(fn{i});
@@ -67,3 +65,11 @@ for i=1:length(fn) % iterate the methods
     end
 %     r = plotMaps(result.(fn{i}).maps,fn{i},1);
 end
+%% with and without GLM
+figure;
+subplot 121
+[~,r] = retinotopicMapFromIndividualMaps(tscaBoth.noGLM,0,'TSCA without GLM',94);
+imf2(r); title('TSCA without GLM');
+subplot 122
+[~,r] = retinotopicMapFromIndividualMaps(tscaBoth.withGLM,0,'TSCA without GLM',94);
+imf2(r);title('TSCA after GLM denoising');

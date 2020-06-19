@@ -1,4 +1,4 @@
-function plotMaps(map,Ttle,CA)
+function plotMaps2(map,Ttle,CA)
 % plot maps (3d matrix, 3rd dimension is differnet condition)
 global params lgn brn ump
     if nargin<2
@@ -10,9 +10,9 @@ global params lgn brn ump
     if iscell(map)
         map = cat(3,map{:});
     end 
-%     for i=1:size(params.experiment.optimalMaps.orig,3) % calc Center Of Mass of each image
-%         [~,r(i),c(i)] = calcCOM(map(:,:,i));
-%     end
+    for i=1:size(params.experiment.optimalMaps.orig,3) % calc Center Of Mass of each image
+        [~,r(i),c(i)] = calcCOM(map(:,:,i));
+    end
     figure("name",sprintf('indMaps %s', Ttle)); 
 %     suptitle([Ttle]);% ", caxis: " num2str(CA)]);
     cAxis = [prctile(map(:),1) prctile(map(:),100)];
@@ -35,7 +35,8 @@ global params lgn brn ump
                 subplot(3,3,i)
         end
         imf2(rshp(tempbrn)); hold on;
-        imf2(map(:,:,i),prctile(reshape(map(:,:,i),[],1),10));
+        imf2(map(:,:,i),prctile(reshape(map(:,:,i),[],1),90));
+        imf2(params.experiment.optimalMaps.orig(:,:,i),prctile(reshape(params.experiment.optimalMaps.orig(:,:,i),[],1),98));
 %         plot(ump/1000*(c(i)-1),ump/1000*(r(i)-1),'*r','MarkerSize',2);
         colormap('parula'); title(lgn(i+2,:));
         if CA
