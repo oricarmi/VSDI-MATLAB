@@ -2,10 +2,10 @@ function [mapTSCA,mapTmax,mapAOF,mapCorr,mapGLM,mapNadav,mapTSCAboth] = Generate
 % A function that generates maps from all methods
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 basis params
 [cf1 cfn trsh0]=strt_up(fname, n);  
-allBrn = input('Whole Brain? [0,1]');
-if allBrn == 0
-   cfn=pk_zn2(cfn,2);
-end
+% allBrn = input('Whole Brain? [0,1]');
+% if allBrn == 0
+%    cfn=pk_zn2(cfn,2);
+% end
  % <---------------- generate signals
 %  try 
 %      if what/10<1 %8locs/9locs/... (not 2hz)
@@ -62,9 +62,9 @@ switch what
             Z = [Z cfn{i}];
         end
 end 
-if input('Choose noise freqs? [0/1]')
-    ChooseNoiseFreqs(Z);
-end
+% if input('Choose noise freqs? [0/1]')
+%     ChooseNoiseFreqs(Z);
+% end
 % <--- define parameters 
 try
     defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z)); % personal pc

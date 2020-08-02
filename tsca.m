@@ -63,7 +63,7 @@ imagesc(noise2.space); colormap(gray);
 subplot 122
 plot(noise2.time);
 t = linspace(0,(T-1)./fs,T);
-noise3.time = 0.5*cos(2*pi*3.*t')+normrnd(0,0.1,T,1);
+noise3.time = mean(0.2*cos(2*pi*[2.9:0.05:3.1].*t'+2*pi*rand(1)),2)+normrnd(0,0.05,T,1);
 [I1,I2] = ndgrid([repmat(linspace(0,2*pi,m/2),1,2)]',1:m);
 noise3.space = cos(I1+I2);
 figure; suptitle('noise - time and spatial features');
@@ -90,7 +90,7 @@ close all;
 NoiseGamma = [repmat(-1:0.2:1,3,1)]';
 Alpha = zeros(size(NoiseGamma,1),4);
 for i=1:size(NoiseGamma,1)
-    [ projected,components,D,Alpha(i,:) ] = tscaFunc(Z,signal1,[noise1,noise2,noise3],[1,NoiseGamma(i,:)],1,1);
+    [projected,components,D,Alpha,output] = tscaFunc(Z,signal1,[noise1,noise2,noise3],[1,-0.25 -0.25 -0.25],1,1);
 end
 
 [ projected,components,D,Alpha ] = tscaFunc(Z,signal1,[noise1,noise2,noise3],[1,-0.25,-0.25,-0.25],1,0);

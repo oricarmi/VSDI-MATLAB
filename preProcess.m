@@ -35,6 +35,9 @@ function [ZZZ] = preProcess(Z)
             ZZZ = Z';
     end
     params.pre.filterType = d;
+    if params.pre.whiten % whiten data
+        ZZZ = whiten(ZZZ);
+    end
     switch params.pre.normalization
         case 'z'
             ZZZ = (ZZZ-mean(ZZZ))./std(ZZZ);

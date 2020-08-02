@@ -8,7 +8,7 @@ m = sqrt(P);
 signals = struct;
 noises = struct;
 stim_time = 10:20:90;
-noiseSig = 0.2; % STD of the noise, change to 0.3 for theoretical SNR = 0 
+noiseSig = 0.02; % STD of the noise, change to 0.3 for theoretical SNR = 0 
 %% construct signals
 [I,J] = ndgrid(1:m,1:m); r = 4; locs = [0.25 0.25; 0.25 0.75; 0.5 0.5; 0.75 0.25; 0.75 0.75]; 
 DC = 0.02; 

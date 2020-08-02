@@ -311,3 +311,42 @@ for k=1:100
         timeMPT(k) = thisTOC;
         %% finish up this iteration
 end
+%% Run everything again with preprocess normalization being none
+addpath("C:\Users\orica\Dropbox\fcns_and_decript");
+addpath('C:\Users\orica\Dropbox\master degree\codes');
+addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
+addpath("C:\Users\Ori\Dropbox\master degree\codes")
+% path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+files = dir(path);
+global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0  basis params
+for i=11:length(files)
+    close all
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    locs = strfind(files(i).name,'_');locs(1) = locs(1)+1; locs(2)=locs(2)-1;
+    fname = ['E:\' files(i).name(locs(1):locs(2)) '\m' files(i).name(locs(1):locs(2))];
+    n = str2num(files(i).name(locs(2)+2)); 
+    if strcmp(files(i).name(locs(1):locs(2)),'200121')
+        What = 92;
+    elseif strcmp(files(i).name(locs(1):locs(2)),'181218') || strcmp(files(i).name(locs(1):locs(2)),'191119') || strcmp(files(i).name(locs(1):locs(2)),'191218')
+        What = 8;
+    elseif contains(Summary.description,'Hz','IgnoreCase',true) 
+        What = str2num(Summary.description(5))*10+2; 
+    else
+        What = str2num(Summary.description(5));
+    end
+    result = struct('TSCAwGLM',struct,'TSCAnoGLM',struct,'Tmax',struct,'AOF',struct,'Corr',struct,'GLM',struct,'Nadav',struct);
+    [result.TSCAwGLM.maps,result.Tmax.maps,result.AOF.maps,result.Corr.maps,result.GLM.maps,result.Nadav.maps,tscaBoth] = GenerateMaps(fname,n,What); % 3rd parameter: what, 8=loc8,9=loc9,92=mvngbars2hz
+    result.TSCAnoGLM.maps = tscaBoth.noGLM;
+    % <----- generate retinotopic maps from the individual maps
+    fn = fieldnames(result);
+    for j=1:length(fn) % iterate the methods 
+        [~,result.(fn{j}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{j}).maps,0,fn{j});
+    end
+    % ---->
+    params.experiment.optimalMaps = Summary.params.experiment.optimalMaps;
+    [result.TSCAwGLM.performance,result.TSCAnoGLM.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
+    result = clusterEvaluation(result);
+    Summary2 = struct('params',params,'result',result,'description',Summary.description); 
+    save(['C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\' Summary.description],'Summary2')
+end

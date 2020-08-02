@@ -100,9 +100,10 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         noiseNew.time = eye(T)/T; noiseNew.space = []; mapTSCA = zeros(m,m,length(signals));
         noise2New.time = createToeplitz(3,0.1,1,1,T); noise2New.space = [];
         noise3New.time = createToeplitz(0.67,0.1,1,1,T); noise3New.space = [];
+        ZZ = whiten(Z);
         for i=1:length(signals)
             sig.time = theoreticalSig(:,i)';
-            [projected,components,D,Alpha,output] = tscaFunc(Z - mean(Z(:)),sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
+            [projected,components,D,Alpha,output] = tscaFunc(ZZ,sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
             %     tscaAnalyze(output,3,[],0,T);
             [~,I] = max(corr(abs(projected(1:4,:)'),theoreticalSig(:,i))); % get the index of component with highest correlation to original signal
             mapTSCA(:,:,i) = MinMaxNorm(abs(reshape(components(:,I),m,m)));

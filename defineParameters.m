@@ -28,6 +28,7 @@ function defineParameters(paramsFilePath,what,Z)
     params.pre.normalization = prms.textval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'normalization')};
     params.post.normalization = prms.textval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'normalization')};
     params.pre.cutoff = str2num(prms.numval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'cutoff')});
+    params.pre.whiten = str2num(prms.numval{strcmp(prms.method,'preprocess params') & strcmp(prms.parameter,'whiten')});
     params.post.gaussfltSTD = str2num(prms.numval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'gaussfltSTD')});
     params.post.medFiltSize = str2num(prms.numval{strcmp(prms.method,'postprocess params') & strcmp(prms.parameter,'medFiltSize')});
     params.AOF.numFramesFrom = str2num(prms.numval{strcmp(prms.method,'AOF params') & contains(prms.parameter,'From')});
