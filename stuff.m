@@ -351,3 +351,67 @@ for i=11:length(files)
 %     save(['C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 3\' Summary.description],'Summary2')
     save(['E:\comparision results 3' Summary.description],'Summary3');
 end
+%%
+%% get mean and std of R matrix (loc 8 only) for each method (7th is GLM+TSCA)
+path = 'D:\dataForComparison\comparision results 2';
+files = dir(path);
+AllRMats = cell(1,7);
+for i=3:length(files) % iterate files
+    if contains(files(i).name,'loc 8')
+        load(fullfile(files(i).folder,files(i).name)); % load summary
+        result = Summary2.result;
+        fn = fieldnames(result);
+        for j=1:length(fn)-1
+            AllRMats{j} = cat(3,AllRMats{j},result.(fn{j}).clusterEval.R);
+        end
+    end
+end
+meanR = cell(1,7); stdR = cell(1,7);
+for i=1:7
+    meanR{i} = mean(AllRMats{i},3);
+    stdR{i} = std(AllRMats{i},0,3);
+end
+%% get DBI for each method (7th is GLM+TSCA)
+path = 'D:\dataForComparison\comparision results 2';
+files = dir(path);
+AllDBI = cell(1,7);
+for i=3:length(files) % iterate files
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary2.result;
+    fn = fieldnames(result);
+    for j=1:length(fn)-1
+        AllDBI{j} = [AllDBI{j};result.(fn{j}).clusterEval.DBI];
+    end
+end
+meanDBI = cell(1,7); stdDBI = cell(1,7);
+for i=1:7
+    meanDBI{i} = mean(AllDBI{i});
+    stdDBI{i} = std(AllDBI{i});
+end
+figure;
+boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'T';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+%% silhouette
+RR = mean(Summary2.params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary2.params.experiment.optimalMaps.orig,3),[],1),80);
+for j=1:length(fn)-1 % iterate the methods and the optimal maps and perform cluster analysis between the maps
+    [~,~,maxind{j}] = retinotopicMapFromIndividualMaps(result.(fn{j}).maps,0,'',93);
+    for k=1:Summary2.params.experiment.N % iterate the maps of this method
+%         thisMap = result.(fn{j}).maps(:,:,k).*double(RR);
+%         [row,col] = find(thisMap>prctile(reshape(thisMap,[],1),99));
+%         if j==1
+%             mapp(:,:,k) = thisMap>prctile(reshape(thisMap,[],1),99);
+%         end
+        [row,col] = find(maxind{j}==k);
+        X{k,j} = [row,col];
+    end
+end
+for j=1:7
+    figure;
+    [s,h] = silhouette(cat(1,X{:,j}),makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
+    [R{j},~,~,~,~,DBI{j}] = ClusterSimilarity(X(:,j));
+end
+
+figure;
+for i=1:7
+    subplot(3,3,i)
+    imagesc(maxind{i});
+end
