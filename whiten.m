@@ -9,6 +9,6 @@ end
 
 function [Xc] = center(X)
 % center data
-Xc = X - mean(X,2);
+Xc = X - mean(X);
 end
 

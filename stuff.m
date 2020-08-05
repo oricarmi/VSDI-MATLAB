@@ -347,6 +347,7 @@ for i=11:length(files)
     params.experiment.optimalMaps = Summary.params.experiment.optimalMaps;
     [result.TSCAwGLM.performance,result.TSCAnoGLM.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
     result = clusterEvaluation(result);
-    Summary2 = struct('params',params,'result',result,'description',Summary.description); 
-    save(['C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\' Summary.description],'Summary2')
+    Summary3 = struct('params',params,'result',result,'description',Summary.description); 
+%     save(['C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 3\' Summary.description],'Summary2')
+    save(['E:\comparision results 3' Summary.description],'Summary3');
 end

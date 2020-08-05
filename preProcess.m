@@ -34,10 +34,6 @@ function [ZZZ] = preProcess(Z)
         otherwise 
             ZZZ = Z';
     end
-    params.pre.filterType = d;
-    if params.pre.whiten % whiten data
-        ZZZ = whiten(ZZZ);
-    end
     switch params.pre.normalization
         case 'z'
             ZZZ = (ZZZ-mean(ZZZ))./std(ZZZ);
@@ -45,6 +41,10 @@ function [ZZZ] = preProcess(Z)
             ZZZ = MinMaxNorm(ZZZ);
         otherwise
             ;
+    end
+    params.pre.filterType = d;
+    if params.pre.whiten % whiten data
+        ZZZ = whiten(ZZZ);
     end
     ZZZ = ZZZ';
 end
