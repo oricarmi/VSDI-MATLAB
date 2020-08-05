@@ -38,8 +38,8 @@ function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X,qp)
             R(i,j) = (S(i) + S(j))/M(i,j);
             R(j,i) = R(i,j);
         end
-        [dbs(i),dbsI(i)] = max(R(i,:));
-        [tmp,tmpI] = mink(R(i,:),2);
+        [dbs(i),dbsI(i)] = max(R(i,:)); % find maximum (most similar)
+        [tmp,tmpI] = mink(R(i,:),2);% find minimum (most unsimilar)
         dbns(i) = tmp(2); dbnsI(i) = tmpI(2);
     end
     DBI = mean(dbs);% mean Davies-Bouldin

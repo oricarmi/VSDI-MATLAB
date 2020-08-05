@@ -1,4 +1,4 @@
-function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(maps,weights,Ttle,pTile,manualSelection)
+function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualMaps(maps,weights,Ttle,pTile,manualSelection)
     global brn ump lgn params
     % map should be 3 dimentional, m by m by #signals
     switch nargin
@@ -44,6 +44,8 @@ function [retinotopicMap,retinotopicMap2] = retinotopicMapFromIndividualMaps(map
     else % real data
         retinotopicMap = hsv2rgb(maxind/params.experiment.N,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         retinotopicMap2 = squeeze(retinotopicMap); retinotopicMap2(sum(retinotopicMap2,2)==0,:) = tempbrn(sum(retinotopicMap2,2)==0,:); % make brain background instead of black
+        maxind = rshp(maxind);
+        maxind(sum(rshp(retinotopicMap),3)==0)=-1;
         if weights
             figure("name",sprintf('retMap %s',Ttle));
             imf2(retinotopicMap2);
