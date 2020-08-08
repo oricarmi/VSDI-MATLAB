@@ -353,14 +353,16 @@ for i=11:length(files)
 end
 %%
 %% get mean and std of R matrix (loc 8 only) for each method (7th is GLM+TSCA)
-path = 'D:\dataForComparison\comparision results 2';
+path = 'E:\comparision results 2';
 files = dir(path);
 AllRMats = cell(1,7);
+global params
 for i=3:length(files) % iterate files
     if contains(files(i).name,'loc 8')
         load(fullfile(files(i).folder,files(i).name)); % load summary
         result = Summary2.result;
         fn = fieldnames(result);
+        params = Summary2.params;
         for j=1:length(fn)-1
             AllRMats{j} = cat(3,AllRMats{j},result.(fn{j}).clusterEval.R);
         end
@@ -372,7 +374,7 @@ for i=1:7
     stdR{i} = std(AllRMats{i},0,3);
 end
 %% get DBI for each method (7th is GLM+TSCA)
-path = 'D:\dataForComparison\comparision results 2';
+path = 'E:\comparision results 2';
 files = dir(path);
 AllDBI = cell(1,7);
 for i=3:length(files) % iterate files
@@ -390,28 +392,72 @@ for i=1:7
 end
 figure;
 boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'T';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
-%% silhouette
-RR = mean(Summary2.params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary2.params.experiment.optimalMaps.orig,3),[],1),80);
-for j=1:length(fn)-1 % iterate the methods and the optimal maps and perform cluster analysis between the maps
-    [~,~,maxind{j}] = retinotopicMapFromIndividualMaps(result.(fn{j}).maps,0,'',93);
-    for k=1:Summary2.params.experiment.N % iterate the maps of this method
-%         thisMap = result.(fn{j}).maps(:,:,k).*double(RR);
-%         [row,col] = find(thisMap>prctile(reshape(thisMap,[],1),99));
-%         if j==1
-%             mapp(:,:,k) = thisMap>prctile(reshape(thisMap,[],1),99);
-%         end
-        [row,col] = find(maxind{j}==k);
-        X{k,j} = [row,col];
+%% silhouette + DB index, cluster analysis with maxind
+path = 'E:\comparision results 2';
+files = dir(path);
+AllRMats = cell(1,7);
+AllDBI = cell(1,7);
+AllS = cell(1,7);
+global params brn
+for i=3:length(files)-1 % iterate files (except last one which is NIR)  
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary2.result;
+    fn = fieldnames(result);
+    params = Summary2.params;
+    RR = mean(params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary2.params.experiment.optimalMaps.orig,3),[],1),85);
+    for j=1:length(fn)-1 % iterate the methods and the optimal maps and perform cluster analysis between the maps
+        [~,~,maxind{j}] = retinotopicMapFromIndividualMaps(result.(fn{j}).maps,0,'',93);
+        maxind{j} = maxind{j}.*RR;
+        for k=1:Summary2.params.experiment.N % iterate the maps of this method
+            [row,col] = find(maxind{j}==k);
+            X{k,j} = [row,col];
+        end
     end
+    for j=1:length(fn)-1
+        figure;
+        [s{j},h] = silhouette(cat(1,X{:,j}),makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
+        AllS{j} = [AllS{j};s{j}];
+        [R{j},~,~,~,~,DBI{j}] = ClusterSimilarity(X(:,j));
+        if contains(files(i).name,'loc 8')
+            AllRMats{j} = cat(3,AllRMats{j},R{j});
+        end
+        AllDBI{j} = [AllDBI{j};DBI{j}];
+    end
+    close all
+    clear X maxind R DBI s
+%     figure;
+%     for i=1:7
+%         subplot(3,3,i)
+%         imagesc(maxind{i});
+%     end
 end
-for j=1:7
-    figure;
-    [s,h] = silhouette(cat(1,X{:,j}),makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
-    [R{j},~,~,~,~,DBI{j}] = ClusterSimilarity(X(:,j));
+set(0,'DefaultTextInterpreter','tex')
+figure;
+boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+title('boxplot of Davies-Bouldin Index of all methods');
+ylabel('DB Index');
+figure;
+boxplot([AllS{2};AllS{3};AllS{4};AllS{5};AllS{6};AllS{7};AllS{1}],[makeClustVector(cellfun(@(x) size(x,1),AllS))]','labels',char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+title('boxplot of silhouette values of all methods');
+ylabel('S_i');
+meanR = cell(1,7); stdR = cell(1,7);
+for i=1:7
+    meanR{i} = mean(AllRMats{i},3);
+    stdR{i} = std(AllRMats{i},0,3);
+end
+meanDBI = cellfun(@mean,AllDBI);
+meanS = cellfun(@nanmean,AllS);
+for i=1:7
+    writematrix(meanR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\meanR.xls','Sheet',i)
+    writematrix(stdR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\stdR.xls','Sheet',i)
 end
 
+%% show cluster results of simulation
 figure;
-for i=1:7
-    subplot(3,3,i)
-    imagesc(maxind{i});
+boxplot([cat(1,thisSNR_Summary{8}{1}(:).DBI),cat(1,thisSNR_Summary{8}{2}(:).DBI),cat(1,thisSNR_Summary{8}{3}(:).DBI),cat(1,thisSNR_Summary{8}{4}(:).DBI),cat(1,thisSNR_Summary{8}{5}(:).DBI),cat(1,thisSNR_Summary{8}{6}(:).DBI)],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
+title('boxplot of Davies-Bouldin Index of all methods - simulation');
+ylabel('DB Index');
+for i=1:6
+    meanRsim{i} = mean(cat(3,thisSNR_Summary{8}{i}(:).R),3);
+    stdRsim{i} = std(cat(3,thisSNR_Summary{8}{i}(:).R),0,3);
 end

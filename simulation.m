@@ -12,8 +12,9 @@ stim_time = 10:20:90;
 noiseSig = [0 0.1 0.8 2 10];
 t = linspace(0,(T-1)/fs,T);
 for kk = 1:length(noiseSig) % iterate different noise sig
-    runSummary = cell(6,50);
+    runSummary = cell(7,100); % 7 methods, 100 repetitions
     retinotopicMapTSCA = zeros(m*m,3); % preallocate 40x40x3(hsv)
+    retinotopicMapTSCA2 = zeros(m*m,3); % preallocate 40x40x3(hsv)
     retinotopicMapTmax = zeros(m*m,3); % preallocate 40x40x3(hsv)
     retinotopicMapAOF = zeros(m*m,3); % preallocate 40x40x3(hsv)
     retinotopicMapCorr = zeros(m*m,3); % preallocate 40x40x3(hsv)
@@ -96,21 +97,34 @@ for kk = 1:length(noiseSig) % iterate different noise sig
 %             title(['Frame ' num2str(ind2show(i))]);
 %         end
         
-        %% ============================= TSCA ===================================
+        %% ============================= TSCA no GLM ===================================
         noiseNew.time = eye(T)/T; noiseNew.space = []; mapTSCA = zeros(m,m,length(signals));
         noise2New.time = createToeplitz(3,0.1,1,1,T); noise2New.space = [];
         noise3New.time = createToeplitz(0.67,0.1,1,1,T); noise3New.space = [];
-        ZZ = whiten(Z);
         for i=1:length(signals)
             sig.time = theoreticalSig(:,i)';
-            [projected,components,D,Alpha,output] = tscaFunc(ZZ,sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
+            [projected,components,D,Alpha,output] = tscaFunc(Z,sig,[noiseNew noise2New noise3New],[1 -0.2*ones(1,3)],100,1);
             %     tscaAnalyze(output,3,[],0,T);
             [~,I] = max(corr(abs(projected(1:4,:)'),theoreticalSig(:,i))); % get the index of component with highest correlation to original signal
             mapTSCA(:,:,i) = MinMaxNorm(abs(reshape(components(:,I),m,m)));
             [tscaMSE(i),tscaPSNR(i),tscaCNR(i),tscaMSSIM(i),tscaCorr(i),tscaCP(i)] = getPerformance(mapTSCA(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
         end
-        retinotopicMapTSCA = retinotopicMapTSCA + retinotopicMapFromIndividualMaps(mapTSCA,0,'TSCA',85);
-        clusterEvalTSCA(k) = ClusterEvaluationSim(mapTSCA);
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapTSCA,0,'TSCA',85);
+        retinotopicMapTSCA = retinotopicMapTSCA + r;
+        [clusterEvalTSCA(k),clusterEval2TSCA(k)] = ClusterEvaluationSim2(maxind);
+
+        %% ============================= TSCA with GLM ===================================
+        for i=1:length(signals)
+            sig.time = theoreticalSig(:,i)';
+            [projected,components,D,Alpha,output] = tscaFunc(ZZ,sig,[noiseNew],[1 -0.2*ones(1,1)],100,1);
+            %     tscaAnalyze(output,3,[],0,T);
+            [~,I] = max(corr(abs(projected(1:4,:)'),theoreticalSig(:,i))); % get the index of component with highest correlation to original signal
+            mapTSCA2(:,:,i) = MinMaxNorm(abs(reshape(components(:,I),m,m)));
+            [tsca2MSE(i),tsca2PSNR(i),tsca2CNR(i),tsca2MSSIM(i),tsca2Corr(i),tsca2CP(i)] = getPerformance(mapTSCA2(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
+        end
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapTSCA2,0,'TSCA+GLM',85);
+        retinotopicMapTSCA2 = retinotopicMapTSCA2 + r;
+        [clusterEvalTSCA2(k),clusterEval2TSCA2(k)] = ClusterEvaluationSim2(maxind);        
         % [maxmap,maxind] = max(map,[],3); maxmap = maxmap(:); maxind = maxind(:);
         % map22 = colors(maxind,:); map22(maxmap(:)< prctile(maxmap(:),70),:) = repmat([0 0 0],length(find(maxmap(:)< prctile(maxmap(:),70))),1);
         % retinotopicMap = hsv2rgb(maxind/length(unique(maxind)),ones(size(maxind)),(maxmap-min(maxmap))./(max(maxmap)-min(maxmap)));
@@ -123,11 +137,12 @@ for kk = 1:length(noiseSig) % iterate different noise sig
             [origMSE(i),origPSNR(i),origCNR(i),origMSSIM(i),origCorr(i),origCP(i)] = getPerformance( mapAOF(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
             %     figure;imagesc(reshape(mean(Z(:,I-25:I+25),2),40,40));
         end
-        retinotopicMapAOF = retinotopicMapAOF + retinotopicMapFromIndividualMaps(mapAOF,0,'AOF',85);
-        clusterEvalAOF(k) = ClusterEvaluationSim(mapAOF);
-        
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapAOF,0,'AOF',85);
+        retinotopicMapAOF = retinotopicMapAOF + r;
+        [clusterEvalAOF(k),clusterEval2AOF(k)] = ClusterEvaluationSim2(maxind);        
         %% ========================== T_max method =============================
         refff = normpdf(0:0.1:(T-1)/10,10,1);
+        r = zeros(1,size(Z,1)); tmax = zeros(size(r));
         for i=1:size(Z,1)
             [rtemp,lags] = xcorr(Z(i,:),refff);
             [r(i),I] = max(rtemp);
@@ -149,8 +164,9 @@ for kk = 1:length(noiseSig) % iterate different noise sig
             end
             [T_MSE(i),T_PSNR(i),T_CNR(i),T_MSSIM(i),T_corr(i),T_CP(i)] = getPerformance(mapTmax(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
         end
-        retinotopicMapTmax = retinotopicMapTmax + retinotopicMapFromIndividualMaps(mapTmax,0,'Tmax',85);
-        clusterEvalTmax(k) = ClusterEvaluationSim(mapTmax);
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapTmax,0,'Tmax',85);
+        retinotopicMapTmax = retinotopicMapTmax + r;
+        [clusterEvalTmax(k),clusterEval2Tmax(k)] = ClusterEvaluationSim2(maxind);  
         % tmax2 = Anew';
         % tmax2(tmax2>=0) = (tmax2(tmax2>=0)./100+2)./2; tmax22 = zeros(length(tmax2),3);% transform 0,200,400,600,800 to 1,2,3,4,5
         % tmax22(tmax2>0,:) = colors(tmax2(tmax2>0),:);
@@ -163,8 +179,9 @@ for kk = 1:length(noiseSig) % iterate different noise sig
             mapCorr(:,:,i) = MinMaxNorm(mapCorr(:,:,i));
             [Corr_MSE(i),Corr_PSNR(i),Corr_CNR(i),Corr_MSSIM(i),Corr_corr(i),Corr_CP(i)] = getPerformance(mapCorr(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
         end
-        retinotopicMapCorr = retinotopicMapCorr + retinotopicMapFromIndividualMaps(mapCorr,0,'corr',85);
-        clusterEvalCorr(k) = ClusterEvaluationSim(mapCorr);
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapCorr,0,'Corr',85);
+        retinotopicMapCorr = retinotopicMapCorr + r;
+        [clusterEvalCorr(k),clusterEval2Corr(k)] = ClusterEvaluationSim2(maxind);
         
         %%  =========================== GLM method =============================
         mapGLM = rshp(betas(6:end,:)');
@@ -172,9 +189,9 @@ for kk = 1:length(noiseSig) % iterate different noise sig
             mapGLM(:,:,i) = MinMaxNorm(mapGLM(:,:,i));
             [GLM_MSE(i),GLM_PSNR(i),GLM_CNR(i),GLM_MSSIM(i),GLM_corr(i),GLM_CP(i)] = getPerformance(mapGLM(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
         end
-        retinotopicMapGLM = retinotopicMapGLM + retinotopicMapFromIndividualMaps(mapGLM,0,'glm',85);
-        clusterEvalGLM(k) = ClusterEvaluationSim(mapGLM);
-
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapGLM,0,'GLM',85);
+        retinotopicMapGLM = retinotopicMapGLM + r;
+        [clusterEvalGLM(k),clusterEval2GLM(k)] = ClusterEvaluationSim2(maxind);
         %% ========================== Nadav's method ===========================
         for i=1:length(signals)
             thisSig = Z(:,stim_time(i)*10-99:stim_time(i)*10+100);
@@ -187,8 +204,9 @@ for kk = 1:length(noiseSig) % iterate different noise sig
             %     figure;imagesc(reshape(mapN(:,:,i),40,40));colormap(gray);
             [nadavMSE(i),nadavPSNR(i),nadavCNR(i),nadavMSSIM(i),nadavCorr(i),nadavCP(i)] = getPerformance(mapMPT(:,:,i),signals(i).space,signals(i).space>10*DC,signals(i).space<=10*DC);
         end
-        retinotopicMapNADAV = retinotopicMapNADAV + retinotopicMapFromIndividualMaps(mapMPT,0,'nadav',85);
-        clusterEvalNadav(k) = ClusterEvaluationSim(mapMPT);
+        [r,~,maxind] = retinotopicMapFromIndividualMaps(mapMPT,0,'MPT',85);
+        retinotopicMapNADAV = retinotopicMapNADAV + r;
+        [clusterEvalNadav(k),clusterEval2Nadav(k)] = ClusterEvaluationSim2(maxind);
         %% finish up this iteration
         % close all;
         runSummary{1,k} = [origMSE;origPSNR;origCNR;origMSSIM;origCorr;origCP];
@@ -196,7 +214,8 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         runSummary{3,k} = [tscaMSE;tscaPSNR;tscaCNR;tscaMSSIM;tscaCorr;tscaCP];
         runSummary{4,k} = [T_MSE;T_PSNR;T_CNR;T_MSSIM;T_corr;T_CP];
         runSummary{5,k} = [Corr_MSE;Corr_PSNR;Corr_CNR;Corr_MSSIM;Corr_corr;Corr_CP];
-        runSummary{6,k} = [GLM_MSE;GLM_PSNR;GLM_CNR;GLM_MSSIM;GLM_corr;GLM_CP];       
+        runSummary{6,k} = [GLM_MSE;GLM_PSNR;GLM_CNR;GLM_MSSIM;GLM_corr;GLM_CP];  
+        runSummary{7,k} = [tsca2MSE;tsca2PSNR;tsca2CNR;tsca2MSSIM;tsca2Corr;tsca2CP];
     end
     %% Compare results (all runs)
     ORIG = cat(3,runSummary{1,:});
@@ -205,24 +224,36 @@ for kk = 1:length(noiseSig) % iterate different noise sig
     Tmax = cat(3,runSummary{4,:}); Tmax(isinf(Tmax)) = 100; Tmax(isnan(Tmax)) = 0;
     Corr = cat(3,runSummary{5,:});
     GLM = cat(3,runSummary{6,:});
-    clusterEvalAll = {clusterEvalTSCA,clusterEvalAOF,clusterEvalTmax,clusterEvalCorr,clusterEvalGLM,clusterEvalNadav};
+    TSCAwGLM = cat(3,runSummary{7,:});
+    clusterEvalAll = {clusterEvalTSCA,clusterEvalAOF,clusterEvalTmax,clusterEvalCorr,clusterEvalGLM,clusterEvalNadav,clusterEvalTSCA2};
+    clusterEvalAll2 = {clusterEval2TSCA,clusterEval2AOF,clusterEval2Tmax,clusterEval2Corr,clusterEval2GLM,clusterEval2Nadav,clusterEval2TSCA2};
     Title = {'MSE','PSNR','CNR','MSSIM','Corr','CP'};
-    Title2 = {'TSCA','Tmax','AOF','Corr','GLM','MPT'};
-    retMaps = {retinotopicMapTSCA./k,retinotopicMapTmax./k,retinotopicMapAOF./k,retinotopicMapCorr./k,retinotopicMapGLM./k,retinotopicMapNADAV./k};
+    Title2 = {'TSCA','T_{max}','AOF','Corr','GLM','MPT'};
+    retMaps = {retinotopicMapTSCA./k,retinotopicMapTmax./k,retinotopicMapAOF./k,retinotopicMapCorr./k,retinotopicMapGLM./k,retinotopicMapNADAV./k,retinotopicMapTSCA2./k};
     figure(kk*10);
     figure(kk*100);
     for i=1:6 % iterate the 6 performance measures
         figure(kk*10);
         subplot(2,3,i)
         boxplot([squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
-            squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2))]...
-            ,char({'TSCA';'T';'AOF';'Corr';'GLM';'MPT'}));
+            squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2))...
+            squeeze(mean(TSCAwGLM(i,:,:),2))]...
+            ,char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';['GLM+','TSCA']}));
         title(Title{i});
         figure(kk*100);
         subplot(2,3,i)
         imagesc(reshape(retMaps{i},40,40,3)); title([Title2{i} ' Retinotopic Map']);
     end
-    thisSNR_Summary = {TSCA,Tmax,ORIG,Corr,GLM,NADAV,retMaps,clusterEvalAll};
-    save(fullfile('C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\simulation results',...
+    figure(kk*1000);
+    boxplot([cat(1,clusterEvalAll{1}(:).DBI),cat(1,clusterEvalAll{2}(:).DBI),cat(1,clusterEvalAll{3}(:).DBI),cat(1,clusterEvalAll{4}(:).DBI),cat(1,clusterEvalAll{5}(:).DBI),cat(1,clusterEvalAll{6}(:).DBI),cat(1,clusterEvalAll{7}(:).DBI)],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+    title('boxplot of Davies-Bouldin Index of all methods - simulation');
+    ylabel('DB Index');
+    figure(kk*10000);
+    boxplot([cat(1,clusterEvalAll2{1}(:).s);cat(1,clusterEvalAll2{2}(:).s);cat(1,clusterEvalAll2{3}(:).s);cat(1,clusterEvalAll2{4}(:).s);cat(1,clusterEvalAll2{5}(:).s);cat(1,clusterEvalAll2{6}(:).s);cat(1,clusterEvalAll2{7}(:).s)]...
+        ,[makeClustVector([length(cat(1,clusterEvalAll2{1}(:).s));length(cat(1,clusterEvalAll2{2}(:).s));length(cat(1,clusterEvalAll2{3}(:).s));length(cat(1,clusterEvalAll2{4}(:).s));length(cat(1,clusterEvalAll2{5}(:).s));length(cat(1,clusterEvalAll2{6}(:).s));length(cat(1,clusterEvalAll2{7}(:).s))])]','labels',char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+    title('boxplot of silhouette index of all methods - simulation');
+    ylabel('Si');
+    thisSNR_Summary = {TSCA,Tmax,ORIG,Corr,GLM,NADAV,TSCAwGLM,retMaps,clusterEvalAll,clusterEvalAll2};
+    save(fullfile('C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\simulation results 2',...
         ['SimulationSummary_NoiseSig=' num2str(noiseSig(kk)) '.mat']),'thisSNR_Summary');
 end

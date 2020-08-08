@@ -35,7 +35,7 @@ global params lgn brn ump
                 subplot(3,3,i)
         end
         imf2(rshp(tempbrn)); hold on;
-        imf2(map(:,:,i),prctile(reshape(map(:,:,i),[],1),10));
+        imf2(map(:,:,i),prctile(reshape(map(:,:,i),[],1),93));
 %         plot(ump/1000*(c(i)-1),ump/1000*(r(i)-1),'*r','MarkerSize',2);
         colormap('parula'); title(lgn(i+2,:));
         if CA

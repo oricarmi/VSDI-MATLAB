@@ -40,7 +40,11 @@ function [R,dbs,dbsI,dbns,dbnsI,DBI] = ClusterSimilarity(X,qp)
         end
         [dbs(i),dbsI(i)] = max(R(i,:)); % find maximum (most similar)
         [tmp,tmpI] = mink(R(i,:),2);% find minimum (most unsimilar)
-        dbns(i) = tmp(2); dbnsI(i) = tmpI(2);
+        try
+            dbns(i) = tmp(2); dbnsI(i) = tmpI(2);
+        catch
+            ;
+        end
     end
     DBI = mean(dbs);% mean Davies-Bouldin
     R = R + eye(size(R,1)); % add ones to diagonal (similarity between a cluster and itself is 1)
