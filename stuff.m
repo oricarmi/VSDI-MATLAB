@@ -434,12 +434,13 @@ end
 set(0,'DefaultTextInterpreter','tex')
 figure;
 boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
-title('boxplot of Davies-Bouldin Index of all methods');
+title('Davies-Bouldin Index');
 ylabel('DB Index');
 figure;
+AllS = cellfun(@(x) max(x, -ones(size(x))),AllS,'uniformoutput',false);
 boxplot([AllS{2};AllS{3};AllS{4};AllS{5};AllS{6};AllS{7};AllS{1}],[makeClustVector(cellfun(@(x) size(x,1),AllS))]','labels',char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
 title('boxplot of silhouette values of all methods');
-ylabel('S_i');
+ylabel('Si');
 meanR = cell(1,7); stdR = cell(1,7);
 for i=1:7
     meanR{i} = mean(AllRMats{i},3);
@@ -451,12 +452,53 @@ for i=1:7
     writematrix(meanR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\meanR.xls','Sheet',i)
     writematrix(stdR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\stdR.xls','Sheet',i)
 end
+%% silhouette between moving bars and loc 8
+AllS_movingBars = [];
+AllS_loc8 = [];
+AllS_loc4 = [];
+for i=[6,7,9,10,16,17] % iterate files (except last one which is NIR)  
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary2.result;
+    fn = fieldnames(result);
+    params = Summary2.params;
+    RR = mean(params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary2.params.experiment.optimalMaps.orig,3),[],1),85);
+    [~,~,maxind2] = retinotopicMapFromIndividualMaps(result.TSCAwGLM.maps,1,'',93);
+    maxind2 = maxind2.*RR;
+        for k=1:Summary2.params.experiment.N % iterate the maps of this method
+            [row,col] = find(maxind2==k);
+            XX{k} = [row,col];
+        end
+    [ss,h] = silhouette(cat(1,XX{:}),makeClustVector(cellfun(@(x) size(x,1),XX))');
+    if contains(files(i).name,'horz')
+        AllS_movingBars = [AllS_movingBars;ss];
+    elseif contains(files(i).name,'loc 8')
+        AllS_loc8 = [AllS_loc8;ss];
+    else % loc 4
+        AllS_loc4 = [AllS_loc4;ss];
+    end
+    clear XX maxind R ss
+end
+figure;boxplot([AllS_movingBars;AllS_loc8],makeClustVector([length(AllS_movingBars);length(AllS_loc8)]),'labels',{'9 moving Bars','8 location grid'});
+ylabel('Si');title('Boxplot of silhouette values - 9 moving bars and 8 location grid');
+figure;boxplot([AllS_movingBars;AllS_loc8;AllS_loc4],makeClustVector([length(AllS_movingBars);length(AllS_loc8);length(AllS_loc4)]),'labels',{'9 moving Bars','8 location grid','4 location grid'});
+ylabel('Si');title('Boxplot of silhouette values - 9 moving bars, 8 and 4 location grid');
+
 
 %% show cluster results of simulation
 figure;
-boxplot([cat(1,thisSNR_Summary{8}{1}(:).DBI),cat(1,thisSNR_Summary{8}{2}(:).DBI),cat(1,thisSNR_Summary{8}{3}(:).DBI),cat(1,thisSNR_Summary{8}{4}(:).DBI),cat(1,thisSNR_Summary{8}{5}(:).DBI),cat(1,thisSNR_Summary{8}{6}(:).DBI)],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
+clusterEvalAll2 = thisSNR_Summary{10};
+boxplot([cat(1,clusterEvalAll2{1}(:).s);cat(1,clusterEvalAll2{2}(:).s);cat(1,clusterEvalAll2{3}(:).s);cat(1,clusterEvalAll2{4}(:).s);cat(1,clusterEvalAll2{5}(:).s);cat(1,clusterEvalAll2{6}(:).s);cat(1,clusterEvalAll2{7}(:).s)]...
+    ,[makeClustVector([length(cat(1,clusterEvalAll2{1}(:).s));length(cat(1,clusterEvalAll2{2}(:).s));length(cat(1,clusterEvalAll2{3}(:).s));length(cat(1,clusterEvalAll2{4}(:).s));length(cat(1,clusterEvalAll2{5}(:).s));length(cat(1,clusterEvalAll2{6}(:).s));length(cat(1,clusterEvalAll2{7}(:).s))])]','labels',char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+title('boxplot of silhouette index of all methods - simulation');
+ylabel('Si');
+
+clusterEvalAll = thisSNR_Summary{9};
+figure;
+boxplot([cat(1,clusterEvalAll{1}(:).DBI),cat(1,clusterEvalAll{2}(:).DBI),cat(1,clusterEvalAll{3}(:).DBI),cat(1,clusterEvalAll{4}(:).DBI),cat(1,clusterEvalAll{5}(:).DBI),cat(1,clusterEvalAll{6}(:).DBI),cat(1,clusterEvalAll{7}(:).DBI)],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
 title('boxplot of Davies-Bouldin Index of all methods - simulation');
 ylabel('DB Index');
+
+
 for i=1:6
     meanRsim{i} = mean(cat(3,thisSNR_Summary{8}{i}(:).R),3);
     stdRsim{i} = std(cat(3,thisSNR_Summary{8}{i}(:).R),0,3);

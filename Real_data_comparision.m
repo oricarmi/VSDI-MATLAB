@@ -57,7 +57,8 @@ retmapsAll = figure("name","retmapsAll");
 for i=2:length(fn)-1 % iterate the methods    
     figure(retmapsAll); subplot(2,3,i-1)
     [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},92);
-    imf2(r); 
+    imf2(r);
+%     imagesc(rshp(result.(fn{i}).retinotopicMap));
     if contains(fn{i},'nadav','ignorecase',true)
         title('M.P.T');
     elseif contains(fn{i},'tsca','ignorecase',true)
