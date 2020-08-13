@@ -393,7 +393,8 @@ end
 figure;
 boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'T';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
 %% silhouette + DB index, cluster analysis with maxind
-path = 'E:\comparision results 2';
+% path = 'E:\comparision results 2';
+path = 'D:\dataForComparison\comparision results 2';
 files = dir(path);
 AllRMats = cell(1,7);
 AllDBI = cell(1,7);
@@ -456,7 +457,10 @@ end
 AllS_movingBars = [];
 AllS_loc8 = [];
 AllS_loc4 = [];
-for i=[6,7,9,10,16,17] % iterate files (except last one which is NIR)  
+AllDBI_movingBars = [];
+AllDBI_loc8 = [];
+AllDBI_loc4 = [];
+for i=[7,8,18,19] % iterate files (except last one which is NIR)  
     load(fullfile(files(i).folder,files(i).name)); % load summary
     result = Summary2.result;
     fn = fieldnames(result);
@@ -469,19 +473,27 @@ for i=[6,7,9,10,16,17] % iterate files (except last one which is NIR)
             XX{k} = [row,col];
         end
     [ss,h] = silhouette(cat(1,XX{:}),makeClustVector(cellfun(@(x) size(x,1),XX))');
+    [~,~,~,~,~,DBI] = ClusterSimilarity(XX);
     if contains(files(i).name,'horz')
         AllS_movingBars = [AllS_movingBars;ss];
+        AllDBI_movingBars = [AllDBI_movingBars;DBI];
     elseif contains(files(i).name,'loc 8')
         AllS_loc8 = [AllS_loc8;ss];
+        AllDBI_loc8 = [AllDBI_loc8;DBI];
     else % loc 4
         AllS_loc4 = [AllS_loc4;ss];
+        AllDBI_loc4 = [AllDBI_loc4;DBI];
     end
     clear XX maxind R ss
 end
 figure;boxplot([AllS_movingBars;AllS_loc8],makeClustVector([length(AllS_movingBars);length(AllS_loc8)]),'labels',{'9 moving Bars','8 location grid'});
 ylabel('Si');title('Boxplot of silhouette values - 9 moving bars and 8 location grid');
-figure;boxplot([AllS_movingBars;AllS_loc8;AllS_loc4],makeClustVector([length(AllS_movingBars);length(AllS_loc8);length(AllS_loc4)]),'labels',{'9 moving Bars','8 location grid','4 location grid'});
-ylabel('Si');title('Boxplot of silhouette values - 9 moving bars, 8 and 4 location grid');
+figure;boxplot([AllDBI_movingBars,;AllDBI_loc8],makeClustVector([length(AllDBI_movingBars);length(AllDBI_loc8)]),'labels',{'9 moving Bars','8 location grid'});
+title('Davies-Bouldin Index');
+ylabel('DB Index');
+
+% figure;boxplot([AllS_movingBars;AllS_loc8;AllS_loc4],makeClustVector([length(AllS_movingBars);length(AllS_loc8);length(AllS_loc4)]),'labels',{'9 moving Bars','8 location grid','4 location grid'});
+% ylabel('Si');title('Boxplot of silhouette values - 9 moving bars, 8 and 4 location grid');
 
 
 %% show cluster results of simulation
