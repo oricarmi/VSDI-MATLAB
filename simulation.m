@@ -11,6 +11,7 @@ colors = [0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1];
 stim_time = 10:20:90;
 noiseSig = [0 0.1 0.8 2 10];
 t = linspace(0,(T-1)/fs,T);
+flag=0; % flag for calculating signal cluster evaluation
 for kk = 1:length(noiseSig) % iterate different noise sig
     runSummary = cell(7,100); % 7 methods, 100 repetitions
     retinotopicMapTSCA = zeros(m*m,3); % preallocate 40x40x3(hsv)
@@ -26,19 +27,34 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         % locs = [0.25 0.25; 0.25 0.75; 0.5 0.5; 0.75 0.25; 0.75 0.75];
         locs = [0.4 0.4; 0.4 0.6; 0.5 0.5; 0.6 0.4; 0.6 0.6]; ind2plot = [1,5,9,13,17];
         DC = 0.02; r = 4;
-%         figure;ind2plot = [1,5,9,13,17];
+        figure;ind2plot = [1,5,9,13,17];
         amp = (1.5-0.5).*rand(1,5)+0.5; % amplitude distributed U~[0.5 1.5]
         for i=1:5
             signals(i).time = amp(i).*(2.5.*normpdf(0:0.1:(T-1)/10,stim_time(i),1)); % normpdf with peak amplitude 1, times random amplitude
             signals(i).space = MinMaxNorm(imgaussfilt(double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2),sqrt(r)))+DC; % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
-            %     signals(i).space = double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2); % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
-%             subplot(3,6,ind2plot(i))
-%             imagesc(signals(i).space); colormap(gray);
-%             title(['sig. ' num2str(i) ' - spatial']);
-%             subplot(3,6,ind2plot(i)+1)
-%             plot(t,signals(i).time,'color','k');
-%             title(['sig. ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
-%             xticks(1:2:9);
+%             signals(i).space = double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2); % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
+            subplot(3,6,ind2plot(i))
+            imagesc(signals(i).space); colormap(gray);
+            title(['sig. ' num2str(i) ' - spatial']);
+            subplot(3,6,ind2plot(i)+1)
+            plot(t,signals(i).time,'color','k');
+            title(['sig. ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
+            xticks(1:2:9);
+        end
+        if ~flag % do this only once
+            mapSigs = cat(3,signals(:).space);
+            [~,~,maxind] = retinotopicMapFromIndividualMaps(mapSigs,0,'sigs',95);
+            [clusterEvalSig,clusterEval2Sig] = ClusterEvaluationSim2(maxind);
+%             figure(12345);
+%             boxplot(clusterEvalSig{1}(:).DBI));
+%             title('boxplot of Davies-Bouldin Index of all methods - simulation');
+%             ylabel('DB Index');
+            figure(12345);
+            boxplot(clusterEval2Sig.s,makeClustVector(length(cat(1,clusterEval2Sig.s))));
+            title('Silhouette Index of simulated responses');
+            ylabel('Si');ylim([-1,1]);
+
+            flag=1;
         end
         %% construct noise
         [I1,I2] = ndgrid([repmat(linspace(0,2*pi,m/2),1,2)]',[repmat(linspace(0,2*pi,m/2),1,2)]);
@@ -54,15 +70,15 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         amp = noiseSig(kk)*4.*rand(size(phase));% random amplitude
         noises(3).time = mean(repmat(amp,1,T).*cos(freqs.*t+phase))+normrnd(0,noiseSig(kk)*0.05,1,T); % create almost periodic signal around 0.67 hz %noiseSig(kk)*cos(2*pi*0.67.*t'+2*pi*rand(1))+normrnd(0,noiseSig(kk)/2,T,1);
         noises(3).space = MinMaxNorm(normrnd(0,1,m,m))+DC;
-%         figure; ind2plot = [1,3,5];
-%         for i=1:length(noises)
-%             subplot(3,2,ind2plot(i))
-%             imagesc(noises(i).space); colormap(gray);
-%             title(['noise ' num2str(i) ' - spatial']);
-%             subplot(3,2,ind2plot(i)+1)
-%             plot(t,noises(i).time,'k');
-%             title(['noise ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
-%         end
+        figure; ind2plot = [1,3,5];
+        for i=1:length(noises)
+            subplot(3,2,ind2plot(i))
+            imagesc(noises(i).space); colormap(gray);
+            title(['noise ' num2str(i) ' - spatial']);
+            subplot(3,2,ind2plot(i)+1)
+            plot(t,noises(i).time,'k');
+            title(['noise ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
+        end
         %% construct Z and show 9 frames
         Z = zeros(m*m,T); % preallocate memory
         for i = 1:T

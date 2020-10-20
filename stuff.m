@@ -10,7 +10,7 @@ for i=7:length(files) % iterate files
         continue
     end
     load(fullfile(files(i).folder,files(i).name)); % load summary
-    result = Summary.result;
+    result = Summary2.result;
     paramz = Summary.params;
     optimalMaps = Summary.params.experiment.optimalMaps.orig;
     N = Summary.params.experiment.N;
@@ -515,3 +515,30 @@ for i=1:6
     meanRsim{i} = mean(cat(3,thisSNR_Summary{8}{i}(:).R),3);
     stdRsim{i} = std(cat(3,thisSNR_Summary{8}{i}(:).R),0,3);
 end
+%% 2D gaussian fit to all images and show in retinotopic map
+zfit2 = struct;
+for j=1:length(fn)
+    if ~strcmpi(fn{j},'Tmax')
+        maps = result.(fn{j}).maps;
+        for i=1:8
+            [fitresult{i}, zfit{i}] = fmgaussfit(1:size(brn,2),1:size(brn,1),maps(:,:,i));
+        end
+        zfit2.(fn{j}).gaussFits = cat(3,zfit{:});
+    %     zfit2GLM_normalized = cellfun(@(x) (x-min(x(:)))./(max(x(:))-min(x(:))),zfitGLM,'UniformOutput',false);
+    %     zfit2GLM_normalized = cat(3,zfit2GLM_normalized{:});
+        [~,zfit2.(fn{j}).retinotopicMap] = retinotopicMapFromIndividualMaps(zfit2.(fn{j}).gaussFits,1,fn{j},96);
+    end
+end
+%% data for kfir
+%%
+path = 'G:\comparision results 2';
+files = dir(path);
+for i=3:length(files)
+    thisName = files(i).name;
+    if contains(thisName,'loc 8','ignorecase',true)
+        load(fullfile(files(i).folder,files(i).name)); % load summary
+        zz = Summary2.params.experiment.ZZ;
+        save(['G:\data for kfir\zz ' Summary2.description],'zz')
+    end
+end
+%%

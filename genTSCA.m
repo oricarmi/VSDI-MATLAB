@@ -1,7 +1,7 @@
 function [mapTSCA] = genTSCA(Z,ZZ)
 % Generate TSCA
-    Z = MinMaxNorm(Z); % perform minmax normalization prior
-    ZZ = MinMaxNorm(ZZ);% perform minmax normalization prior
+    Z = MinMaxNorm(Z); % perform minmax normalization prior (no GLM)
+    ZZ = MinMaxNorm(ZZ);% perform minmax normalization prior (after GLM)
 global fs basis params brn cfn
     noise1.time = eye(params.experiment.T)/params.experiment.T; % autocorrelation matrix of white noise
     if ~isempty(params.TSCA.Noise.freqs) % build oscillatory noises matrices
