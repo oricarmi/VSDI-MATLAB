@@ -1,4 +1,4 @@
-function [Signal1,Signal2,Signal3,beta] = GLM_VSDI(Z,noiseFreqs,basis)
+function [Signal1,Signal2,Signal3,beta,Noise] = GLM_VSDI(Z,noiseFreqs,basis)
 % Fit a generalizd linear model to the data according to the noises
 % specified in noises 
     global fs brn

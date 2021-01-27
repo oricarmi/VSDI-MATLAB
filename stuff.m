@@ -91,27 +91,29 @@ global brn lgn ump
 brn = zeros(270,327);
 allPerformance = []; allDBI = [];
 %% summarize all performance measures real data
-path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
+path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results 2';
 files = dir(path);
-totalTSCA = []; totalTmax = []; totalAOF = []; totalCorr = []; totalGLM = []; totalNadav = [];
+totalTSCA = []; totalTmax = []; totalAOF = []; totalCorr = []; totalGLM = []; totalNadav = []; totalBoth = [];
 for i=3:length(files) % iterate files
-    load(fullfile(files(i).folder,files(i).name)); % load summary
-    result = Summary.result;
-    totalTSCA = [totalTSCA;result.TSCA.performance];
-    totalTmax = [totalTmax;result.Tmax.performance];
-    totalAOF = [totalAOF;result.AOF.performance];
-    totalCorr = [totalCorr;result.Corr.performance];
-    totalGLM = [totalGLM;result.GLM.performance];
-    totalNadav = [totalNadav;result.Nadav.performance];
+    if contains(files(i).name,"181218 n=2")
+        load(fullfile(files(i).folder,files(i).name)); % load summary
+        result = Summary.result;
+        totalBoth = [totalBoth;result.TSCAwGLM.performance];
+        totalTSCA = [totalTSCA;result.TSCAnoGLM.performance];
+        totalTmax = [totalTmax;result.Tmax.performance];
+        totalAOF = [totalAOF;result.AOF.performance];
+        totalCorr = [totalCorr;result.Corr.performance];
+        totalGLM = [totalGLM;result.GLM.performance];
+        totalNadav = [totalNadav;result.Nadav.performance];
+    end
 end
 Title = {'MSE','PSNR','CNR','MSSIM','Corr','CP'};
-Title2 = {'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'};
 figure;
 for i=1:size(totalAOF,2) % iterate the 6 performance measures
     subplot(2,3,i);
-    boxplot([totalTSCA(:,i),totalTmax(:,i),totalAOF(:,i),totalCorr(:,i),totalGLM(:,i),totalNadav(:,i)],...
-        char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
-    title(Title{i});
+    boxplot([totalBoth(:,i),totalTSCA(:,i),totalTmax(:,i),totalAOF(:,i),totalCorr(:,i),totalGLM(:,i),totalNadav(:,i)],...
+        char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
+    title(Title{i});box off;
 end
 %% summarize all cluster analysis real data
 path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparison results';
@@ -138,14 +140,16 @@ end
 
 %% save video
 figure; 
-for l=1:size(ZtoWrite,3)
-    imagesc(ZtoWrite(:,:,l));colormap('gray');
+v = VideoWriter('zz3D_091120_FF.avi');
+open(v);
+for l=1:size(zz3D,3)
+    imagesc(zz3D(:,:,l));colormap('gray');
     frame = getframe(gcf);
     writeVideo(v,frame);
 end
 close(v);
 %% show simulation results (without running it all over again)
-path = 'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\simulation results';
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\simulation results 2';
 files = dir(path);
 for m=3:length(files)
     load(fullfile(files(m).folder,files(m).name)); 
@@ -155,18 +159,20 @@ for m=3:length(files)
     Corr = thisSNR_Summary{4};
     GLM = thisSNR_Summary{5};
     NADAV = thisSNR_Summary{6};
+    TSCAwGLM = thisSNR_Summary{7};
     Title = {'MSE','PSNR','CNR','MSSIM','Pearson''s Corr','CP'};
     Title2 = {'TSCA','Tmax','AOF','Corr','GLM','MPT'};
-    retMaps = thisSNR_Summary{7};
-    clusterEvalAll = thisSNR_Summary{8};
+    retMaps = thisSNR_Summary{8};
+    clusterEvalDBI = thisSNR_Summary{9};
+    clusterEvalS = thisSNR_Summary{10};
     figure(m*1000);
     figure(m*10000);
     for i=1:6 % iterate the 6 performance measures
         figure(m*1000);
         subplot(2,3,i)
-        boxplot([squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
+        boxplot([squeeze(mean(TSCAwGLM(i,:,:),2)) squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
             squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2))]...
-            ,char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}));
+            ,char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
         title(Title{i});
         figure(m*10000);
         subplot(2,3,i)
@@ -351,7 +357,18 @@ for i=11:length(files)
 %     save(['C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 3\' Summary.description],'Summary2')
     save(['E:\comparision results 3' Summary.description],'Summary3');
 end
-%%
+%% preProcess with imopen
+ZZ = (Z-min(Z(:)))/(max(Z(:)-min(Z(:))))*255; % make all values [0 255]
+% ZZ = Z; ZZ(ZZ<0) = 0; ZZ(ZZ>1) = 1;
+ZZ = reshape(ZZ,[],size(ZZ,3));
+ZZ = filtfilt(ones(1,3),3,ZZ'); ZZ = ZZ'; % temporal low pass filtering
+ZZZ = rshp(ZZ);
+for i=1:size(ZZZ,3)
+    ZZZ(:,:,i) = medfilt2(ZZZ(:,:,i));
+    ZZZ(:,:,i) = imopen(ZZZ(:,:,i),strel('disk',3));
+    ZZZ(:,:,i) = imgaussfilt(ZZZ(:,:,i),3.5);
+end
+implay(MinMaxNorm(ZZZ));
 %% get mean and std of R matrix (loc 8 only) for each method (7th is GLM+TSCA)
 path = 'E:\comparision results 2';
 files = dir(path);
@@ -394,13 +411,14 @@ figure;
 boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'T';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
 %% silhouette + DB index, cluster analysis with maxind
 % path = 'E:\comparision results 2';
-path = 'D:\dataForComparison\comparision results 2';
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparision results 2';
 files = dir(path);
 AllRMats = cell(1,7);
 AllDBI = cell(1,7);
 AllS = cell(1,7);
 global params brn
-for i=3:length(files)-1 % iterate files (except last one which is NIR)  
+for i=1:length(files)-1 % iterate files (except last one which is NIR)  
+    if ~isfolder(files(i).name) && ( contains(files(i).name,'181218') || contains(files(i).name,'191119') )
     load(fullfile(files(i).folder,files(i).name)); % load summary
     result = Summary2.result;
     fn = fieldnames(result);
@@ -415,52 +433,61 @@ for i=3:length(files)-1 % iterate files (except last one which is NIR)
         end
     end
     for j=1:length(fn)-1
-        figure;
         [s{j},h] = silhouette(cat(1,X{:,j}),makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
+        NN = histcounts(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
+        expectedClustSize = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/params.experiment.N;
+        NNN = abs(NN - expectedClustSize)/expectedClustSize; 
+%         NNN = NNN + (8-length(unique(NN)));
+        NNNN = repelem(NNN,NN);
+        s{j} = s{j} - NNNN';
+        s{j} = 2*(s{j}-min(s{j}))/(max(s{j})-min(s{j}))-1;
         AllS{j} = [AllS{j};s{j}];
-        [R{j},~,~,~,~,DBI{j}] = ClusterSimilarity(X(:,j));
-        if contains(files(i).name,'loc 8')
-            AllRMats{j} = cat(3,AllRMats{j},R{j});
-        end
-        AllDBI{j} = [AllDBI{j};DBI{j}];
+%         [R{j},~,~,~,~,DBI{j}] = ClusterSimilarity(X(:,j));
+%         if contains(files(i).name,'loc 8')
+%             AllRMats{j} = cat(3,AllRMats{j},R{j});
+%         end
+%         AllDBI{j} = [AllDBI{j};DBI{j}];
     end
-    close all
+%     close all
     clear X maxind R DBI s
 %     figure;
 %     for i=1:7
 %         subplot(3,3,i)
 %         imagesc(maxind{i});
 %     end
+    end
 end
-set(0,'DefaultTextInterpreter','tex')
-figure;
-boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
-title('Davies-Bouldin Index');
-ylabel('DB Index');
+% set(0,'DefaultTextInterpreter','tex')
+% figure;
+% boxplot([AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},AllDBI{1}],char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
+% title('Davies-Bouldin Index');
+% ylabel('DB Index');
 figure;
 AllS = cellfun(@(x) max(x, -ones(size(x))),AllS,'uniformoutput',false);
 boxplot([AllS{2};AllS{3};AllS{4};AllS{5};AllS{6};AllS{7};AllS{1}],[makeClustVector(cellfun(@(x) size(x,1),AllS))]','labels',char({'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT';'TSCA+GLM'}));
 title('boxplot of silhouette values of all methods');
 ylabel('Si');
-meanR = cell(1,7); stdR = cell(1,7);
-for i=1:7
-    meanR{i} = mean(AllRMats{i},3);
-    stdR{i} = std(AllRMats{i},0,3);
-end
-meanDBI = cellfun(@mean,AllDBI);
-meanS = cellfun(@nanmean,AllS);
-for i=1:7
-    writematrix(meanR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\meanR.xls','Sheet',i)
-    writematrix(stdR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\stdR.xls','Sheet',i)
-end
+% meanR = cell(1,7); stdR = cell(1,7);
+% for i=1:7
+%     meanR{i} = mean(AllRMats{i},3);
+%     stdR{i} = std(AllRMats{i},0,3);
+% end
+% meanDBI = cellfun(@mean,AllDBI);
+% meanS = cellfun(@nanmean,AllS);
+% for i=1:7
+%     writematrix(meanR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\meanR.xls','Sheet',i)
+%     writematrix(stdR{i},'C:\Users\Ori\Desktop\Ori\2nd degree\matlab codez\vsdi - matlab\comparision results 2\stdR.xls','Sheet',i)
+% end
 %% silhouette between moving bars and loc 8
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparision results 2';
+files = dir(path);
 AllS_movingBars = [];
 AllS_loc8 = [];
 AllS_loc4 = [];
 AllDBI_movingBars = [];
 AllDBI_loc8 = [];
 AllDBI_loc4 = [];
-for i=[7,8,18,19] % iterate files (except last one which is NIR)  
+for i=[8,9,18,19,21] % iterate files (except last one which is NIR)  
     load(fullfile(files(i).folder,files(i).name)); % load summary
     result = Summary2.result;
     fn = fieldnames(result);
@@ -475,10 +502,10 @@ for i=[7,8,18,19] % iterate files (except last one which is NIR)
     [ss,h] = silhouette(cat(1,XX{:}),makeClustVector(cellfun(@(x) size(x,1),XX))');
     [~,~,~,~,~,DBI] = ClusterSimilarity(XX);
     if contains(files(i).name,'horz')
-        AllS_movingBars = [AllS_movingBars;ss];
+        AllS_movingBars = [AllS_movingBars;median(ss)];
         AllDBI_movingBars = [AllDBI_movingBars;DBI];
     elseif contains(files(i).name,'loc 8')
-        AllS_loc8 = [AllS_loc8;ss];
+        AllS_loc8 = [AllS_loc8;median(ss)];
         AllDBI_loc8 = [AllDBI_loc8;DBI];
     else % loc 4
         AllS_loc4 = [AllS_loc4;ss];
@@ -486,11 +513,15 @@ for i=[7,8,18,19] % iterate files (except last one which is NIR)
     end
     clear XX maxind R ss
 end
-figure;boxplot([AllS_movingBars;AllS_loc8],makeClustVector([length(AllS_movingBars);length(AllS_loc8)]),'labels',{'9 moving Bars','8 location grid'});
-ylabel('Si');title('Boxplot of silhouette values - 9 moving bars and 8 location grid');
-figure;boxplot([AllDBI_movingBars,;AllDBI_loc8],makeClustVector([length(AllDBI_movingBars);length(AllDBI_loc8)]),'labels',{'9 moving Bars','8 location grid'});
-title('Davies-Bouldin Index');
-ylabel('DB Index');
+figure;
+subplot 121
+boxplot([AllS_movingBars;AllS_loc8],makeClustVector([length(AllS_movingBars);length(AllS_loc8)]),'labels',{'9 moving bars','8 location grid'});
+ylabel('median Si');
+%title('Boxplot of silhouette values - 9 moving bars and 8 location grid');
+subplot 122
+boxplot([AllDBI_movingBars,;AllDBI_loc8],makeClustVector([length(AllDBI_movingBars);length(AllDBI_loc8)]),'labels',{'9 moving bars','8 location grid'});
+%title('Davies-Bouldin Index');
+ylabel('DBI');
 
 % figure;boxplot([AllS_movingBars;AllS_loc8;AllS_loc4],makeClustVector([length(AllS_movingBars);length(AllS_loc8);length(AllS_loc4)]),'labels',{'9 moving Bars','8 location grid','4 location grid'});
 % ylabel('Si');title('Boxplot of silhouette values - 9 moving bars, 8 and 4 location grid');
@@ -529,16 +560,12 @@ for j=1:length(fn)
         [~,zfit2.(fn{j}).retinotopicMap] = retinotopicMapFromIndividualMaps(zfit2.(fn{j}).gaussFits,1,fn{j},96);
     end
 end
-%% data for kfir
 %%
-path = 'G:\comparision results 2';
-files = dir(path);
-for i=3:length(files)
-    thisName = files(i).name;
-    if contains(thisName,'loc 8','ignorecase',true)
-        load(fullfile(files(i).folder,files(i).name)); % load summary
-        zz = Summary2.params.experiment.ZZ;
-        save(['G:\data for kfir\zz ' Summary2.description],'zz')
-    end
-end
-%%
+N = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/8;
+NN = histcounts(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
+expectedClustSize = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/8;
+NNN = abs(NN - N)/expectedClustSize; 
+NNN = NNN + (8-length(unique(NN)));
+NNNN = repelem(NNN,NN);
+s{j} = s{j} - NNNN';
+s{j} = 2*(s{j}-min(s{j}))/(max(s{j})-min(s{j}))-1;

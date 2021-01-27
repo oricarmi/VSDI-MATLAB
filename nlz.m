@@ -1,14 +1,16 @@
 clear all; close all; clc;
-cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
-addpath('C:\Users\Ori\Dropbox\fcns_and_decript');
-% fname='C:\Users\Ori\Desktop\Ori\2nd degree\mtdt\180905\m180905.mat';
-addpath('C:\Users\Ori\Dropbox\master degree\codes');
-fname='C:\Users\Ori\Desktop\Ori\2nd degree\mtdt\191212\m191212.mat';
-% fname = 'F:\2019.12.12\m191212.mat';
+% cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
+addpath("C:\Users\orica\Dropbox\fcns_and_decript");
+addpath('C:\Users\orica\Dropbox\master degree\codes');
+addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
+addpath("C:\Users\Ori\Dropbox\master degree\codes")
+
+%fname='C:\Users\Ori\Desktop\Ori\2nd degree\mtdt\191212\m191212.mat';
+fname = "H:\2021.01.18\m210118.mat";
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% copy&paste below%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global bsln fs sz ump rot fgn brn frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms
+global bsln fs sz ump rot fgn brn frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn
 
 % vc=vector of conditions:
 %1) loc428/strt_up/loc84pt control 8loc vs 42loc
@@ -18,11 +20,12 @@ global bsln fs sz ump rot fgn brn frq cmap lgn scl lgn00 fnm c_f vms plt_on pt p
 % cfn=cfn0; sz=sz0; brn=brn0; restore to original condition
 
 %% upload data
-clz; n=4; [cf1 cfn trsh0]=strt_up(fname, n);
+clz; n=2; [cf1 cfn trsh0]=strt_up(fname, n);
 %% run till here
 
 %% initial nlz
 % last input: df/f=0, std=1
+Z = showVideo(cfn); % show video 
 [dt_dfof dt_nrm]=int_nlz(cf1, cfn, n, 0.1, 1);
 
 %% combine experiment 2 loc4 to 1 loc8 experiment
@@ -260,7 +263,7 @@ cfnl=1./((c{9}+c{4}+c{7})./(c{3}+c{8}+c{5}))
 cfnl=(c{3}+c{9}+c{6})-(c{4}+c{8}+c{10}+c{7}+c{5})
 
 cfnl=(c{10}+c{7}+c{5})-(c{3}+c{9}+c{6}+c{4}+c{8})
-cfnl=(c{3}+c{5}+c{7}+c{9})-(4}+c{6}+c{8}+c{10})
+cfnl=(c{3}+c{5}+c{7}+c{9})-({4}+c{6}+c{8}+c{10})
 cfnl=(c{3}-c{2})./(c{2}+c{3})
 cfnl=c{3}./c{2};
 cfnl=(c{3}./c{2})./(c{2}+c{3});

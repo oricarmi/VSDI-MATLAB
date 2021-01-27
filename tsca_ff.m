@@ -5,7 +5,7 @@ global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on
 status = 0;
 noise1.time = eye(100)/size(cfn{1},2); % autocorrelation matrix of white noise
 for i=1:length(noises)
-    noise2(i).time = createToeplitz(noises(i).f0,noises(i).bw,3);
+    noise2(i).time = createToeplitz(noises(i).f0,noises(i).bw,3,[],100);
 end
 img = cell(2,1);
 signal.time = signal2_smooth;

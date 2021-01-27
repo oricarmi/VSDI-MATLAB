@@ -35,10 +35,12 @@ for kk = 1:length(noiseSig) % iterate different noise sig
 %             signals(i).space = double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2); % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
             subplot(3,6,ind2plot(i))
             imagesc(signals(i).space); colormap(gray);
-            title(['sig. ' num2str(i) ' - spatial']);
+            xlabel('pixels'); ylabel('pixels');
+%             title(['sig. ' num2str(i) ' - spatial']);
             subplot(3,6,ind2plot(i)+1)
             plot(t,signals(i).time,'color','k');
-            title(['sig. ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
+%             title(['sig. ' num2str(i) ' - temporal']); 
+            xlabel('time [sec]'); ylabel('Amp. [au]');
             xticks(1:2:9);
         end
         if ~flag % do this only once
@@ -74,10 +76,12 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         for i=1:length(noises)
             subplot(3,2,ind2plot(i))
             imagesc(noises(i).space); colormap(gray);
-            title(['noise ' num2str(i) ' - spatial']);
+            xlabel('pixels'); ylabel('pixels');
+%             title(['noise ' num2str(i) ' - spatial']);
             subplot(3,2,ind2plot(i)+1)
             plot(t,noises(i).time,'k');
-            title(['noise ' num2str(i) ' - temporal']); xlabel('time [sec]'); ylabel('Amp. [$\mu$V]');
+%             title(['noise ' num2str(i) ' - temporal']); 
+            xlabel('time [sec]'); ylabel('Amp. [au]');
         end
         %% construct Z and show 9 frames
         Z = zeros(m*m,T); % preallocate memory

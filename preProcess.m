@@ -6,17 +6,18 @@ function [ZZZ] = preProcess(Z)
 %     ZZ = Z; ZZ(ZZ<0) = 0; ZZ(ZZ>1) = 1;
 %     ZZ = filtfilt(ones(1,3),3,ZZ'); ZZ = ZZ'; % temporal low pass filtering
 %     t = linspace(0,(T-1)./fs,T); 
-% %     ZZZ = ZZ;
-% %     for i=1:size(ZZ,1)
-% %         ZZZ(i) = max(xcorr(Z(40430,:),sin(2*pi*2.*t),'coeff')).*ZZ(i);
-% %     end  
+%     ZZZ = ZZ;
+%     for i=1:size(ZZ,1)
+%         ZZZ(i) = max(xcorr(Z(40430,:),sin(2*pi*2.*t),'coeff')).*ZZ(i);
+%     end  
 %     ZZZ = reshape(ZZ,size(brn,1),[],T); % reshape to image frames
+%     ZZZ = Z;
 %     for i=1:size(ZZZ,3)
 %         ZZZ(:,:,i) = medfilt2(ZZZ(:,:,i));
 % %         [gradThresh,numIter] = imdiffuseest(ZZZ(:,:,i),'ConductionMethod','quadratic');
 % %         ZZZ(:,:,i) = imdiffusefilt(ZZZ(:,:,i),'ConductionMethod','quadratic', ...
 % %             'GradientThreshold',gradThresh,'NumberOfIterations',numIter);
-%         ZZZ(:,:,i) = imopen(ZZZ(:,:,i),strel('disk',4));
+%         ZZZ(:,:,i) = imopen(ZZZ(:,:,i),strel('disk',3));
 %         ZZZ(:,:,i) = imgaussfilt(ZZZ(:,:,i),3.5);
 % %         PSF = fspecial('gaussian',7,2.5);
 % %         WT = zeros(size(brn));

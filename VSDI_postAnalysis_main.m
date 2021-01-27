@@ -1,9 +1,9 @@
 %% main
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% GENERAL %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% generate individual maps %%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all; close all; clc;
-fname = "G:\181218\m181218.mat"; % path to .mat file (mYYMMDD)
+fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.01.18\m210118.mat"; % path to .mat file (mYYMMDD)
 n=2; % experiment number 
-what = 8; % type of experiment. 8 - loc 8. 9 - loc 9 grid. 92 - 9 moving bars/diagonal dots, 2Hz
+what = 9; % type of experiment. 8 - loc 8. 9 - loc 9 grid. 92 - 9 moving bars/diagonal dots, 2Hz
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
 addpath("C:\Users\orica\Dropbox\fcns_and_decript");
 addpath('C:\Users\orica\Dropbox\master degree\codes');
@@ -26,9 +26,9 @@ switch what
             Z = [Z cfn{i}];
         end
 end 
-if input('Choose noise freqs? [0/1]')
-    ChooseNoiseFreqs(Z);
-end
+% if input('Choose noise freqs? [0/1]')
+%     ChooseNoiseFreqs(Z);
+% end
 defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z)); % lab pc
 ZZ = preProcess(Z); % preprocessing
 implay(rshp(ZZ),20); % play video
@@ -45,6 +45,8 @@ for i=1:params.experiment.N % iterate all conditions
 end
 mapTSCA = cat(3,mapTSCA{:});
 % --->
+
+%% 
 [~,retinotopicMap,maxind] = retinotopicMapFromIndividualMaps(mapTSCA,1,'Retinotopic Map'); % show retinotopic map
 % <--- cluster analysis
 X = cell(params.experiment.N,1); % preallocate memory
