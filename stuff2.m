@@ -173,19 +173,17 @@ for m=6:6
     NADAV = thisSNR_Summary{6};
     TSCAwGLM = thisSNR_Summary{7};
     Title = {'MSE','PSNR','CNR','MSSIM','Pearson''s Corr','CP'};
-    Title2 = {'TSCA & GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
-    Title3 = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
+    Title2 = {'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
     retMaps = thisSNR_Summary{8};
     clusterEvalDBI = thisSNR_Summary{9};
     clusterEvalS = thisSNR_Summary{10};
     figure(m*100);
-    figure(m*1000);
     for i=1:6 % iterate the 6 performance measures
         figure(m*100);
         subplot(2,3,i)
         boxplot([squeeze(mean(TSCAwGLM(i,:,:),2)) squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
             squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2))]...
-            ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+            ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');set(gca,'XTickLabelRotation',60);
         ylabel(Title{i});
         box off;
         
@@ -194,6 +192,7 @@ for m=6:6
 %         imagesc(reshape(retMaps{i},40,40,3)); title(Title3{i});%title([Title2{i} ' Retinotopic Map']);
     end
     figure(m*10000);
+    subplot 121
     for j=1:7 % iterate method
         for k=1:100 % iterate repitition
             if length(clusterEvalS{j}(k).s)~=240
@@ -204,25 +203,27 @@ for m=6:6
     boxplot([median([clusterEvalS{7}.s])' median([clusterEvalS{1}.s])' median([clusterEvalS{2}.s])' median([clusterEvalS{3}.s])'...
         median([clusterEvalS{4}.s])' median([clusterEvalS{5}.s])' median([clusterEvalS{6}.s])']...
         ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
-    ylabel('Silhouette Index');
-    figure(m*1000+1);
+    ylabel('Silhouette Index');box off; set(gca,'XTickLabelRotation',45);
+    subplot 122
     boxplot([([clusterEvalDBI{7}.DBI])' ([clusterEvalDBI{1}.DBI])' ([clusterEvalDBI{2}.DBI])' ([clusterEvalDBI{3}.DBI])'...
         ([clusterEvalDBI{4}.DBI])' ([clusterEvalDBI{5}.DBI])' ([clusterEvalDBI{6}.DBI])']...
         ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
-    ylabel('DBI');
+    ylabel('DBI');box off; set(gca,'XTickLabelRotation',45);
     
+    figure(112);
     if m==6
-        for kk=2:7
-            figure(112);
-            subplot(2,4,kk)
-            imagesc(reshape(retMaps{kk-1},40,40,3)); title([Title3{kk}]);
-            xlabel('pixels');ylabel('pixels');
-        end
         subplot(2,4,1)
-        imagesc(reshape(retMaps{7},40,40,3)); title([Title3{1}]);
-        xlabel('pixels');ylabel('pixels');
-        subplot(2,4,8)
-        title([Title3{8}]);
+        imagesc(reshape(retMaps{7},40,40,3)); title([Title2{1}]);
+        xlabel('pixels');ylabel('pixels');set(gca,'xticklabel',[]);set(gca,'xtick',[]);set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+        for kk=2:7
+            subplot(2,4,kk)
+            imagesc(reshape(retMaps{kk-1},40,40,3)); title([Title2{kk}]);
+            xlabel('pixels');ylabel('pixels');
+            set(gca,'xticklabel',[]);set(gca,'xtick',[]);set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+        end
+        subplot(2,4,8);
+        imagesc(rshp(retinotopicMap));xlabel('pixels'); ylabel('pixels');title('Expected Map');
+        set(gca,'xticklabel',[]);set(gca,'xtick',[]);set(gca,'yticklabel',[]);set(gca,'ytick',[]);
     end
     
 end
@@ -271,11 +272,11 @@ for m=3:length(files)
     for kk=2:7
         figure(m*1000);
         subplot(2,4,kk)
-        imagesc(reshape(retMaps{kk-1},40,40,3)); title([Title3{kk}]);
+        imagesc(reshape(retMaps{kk-1},40,40,3)); title([Title2{kk}]);
         xlabel('pixels');ylabel('pixels');
     end
     subplot(2,4,1) % plot tsca+glm in first subplot
-    imagesc(reshape(retMaps{7},40,40,3)); title([Title3{1}]);
+    imagesc(reshape(retMaps{7},40,40,3)); title([Title2{1}]);
     xlabel('pixels');ylabel('pixels');
     % end
     % boxblot of silhouette index (last subplot, #8)
@@ -357,5 +358,59 @@ boxplot([AllDBI{1},AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7},A
 ylabel('Adjusted DBI');
 box off
 % title('Davies-Bouldin Index');
-%%
-% hi Lamberto once again
+%% Plot retmaps of a loaded Summary2 manual maps
+result = Summary2.result;
+params = Summary2.params;
+for i=1:8
+    params.experiment.optimalMaps.orig(:,:,i) = MinMaxNorm(params.experiment.optimalMaps.orig(:,:,i));
+end
+fn = fieldnames(result);
+retmapsAll = figure("name","retmapsAll",'Position', [100 0 1400 500]);
+% indmapsAll = figure("name","indmapsAll");
+% Titles = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
+Titles ={'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT','Manual Maps'};
+flag=0;
+for i=1:length(fn)-1 % iterate the methods  
+%     if i==1
+%         for iii=1:size(result.(fn{i}).maps,3)
+%             result.(fn{i}).maps(:,:,iii) = result.(fn{i}).maps(:,:,iii).*R;
+%         end   
+%     end
+    [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},92);
+    figure(retmapsAll); subplot(2,4,i)
+    imf2(r);xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+%     imagesc(rshp(result.(fn{i}).retinotopicMap));
+    title(Titles{i}); hold on;
+    if ~flag
+        rectangle('Position',[4.5,5,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+        text(4.4,4.8,'1mm','color',[1 1 1],'fontsize',12);
+        flag=1;
+    end
+%     annotation(retmapsAll,'doublearrow',[0.1 0.1],[.1 0]);
+%     if contains(fn{i},'nadav','ignorecase',true)
+%         title('M.P.T');
+%     elseif contains(fn{i},'tscano','ignorecase',true)
+%         title('TSCA');
+%     elseif contains(fn{i},'tscaw','ignorecase',true)
+%         title('TSCA & GLM');
+%     else
+%         title(fn{i});
+%     end
+%     r = plotMaps(result.(fn{i}).maps,fn{i},1);
+end
+subplot(2,4,8);
+[~,r] = retinotopicMapFromIndividualMaps(params.experiment.optimalMaps.orig,0,fn{i},98);
+imf2(r);xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+%     imagesc(rshp(result.(fn{i}).retinotopicMap));
+title(Titles{end}); hold on;
+%% supp figure 6b (image restoration metrics between all methods compared to optimal maps)
+load('C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparision results 2\comparison to manual maps 181218 n=2 for supp material.mat');
+figure;
+Title = {'MSE','PSNR','CNR','MSSIM','Pearson''s Corr','CP'};
+for j=1:6 % iterate six metrics
+    subplot(2,3,j);
+    boxplot([comparison2manualMaps181218_2{1}(:,j),comparison2manualMaps181218_2{2}(:,j),comparison2manualMaps181218_2{3}(:,j), ...
+        comparison2manualMaps181218_2{4}(:,j),comparison2manualMaps181218_2{5}(:,j),comparison2manualMaps181218_2{6}(:,j), ...
+        comparison2manualMaps181218_2{7}(:,j)],char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+    set(gca,'XTickLabelRotation',60);ylabel(Title{j});box off;
+end

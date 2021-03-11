@@ -9,9 +9,9 @@ clear all; close all; clc;
 % fname = "E:\181218\m181218.mat"; n=2;
 % fname = "E:\180801\m180801.mat"; n=3;
 % fname = "D:\2019.07.10\m190710.mat"; n=2;
-% fname = "G:\2019.12.18\m191218.mat"; n=1;
+fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.03 - taget flankers\m210303.mat"; n=3;
 % fname = "G:\2019.12.11\m191211.mat"; n=3;
-fname = "H:\2020.11.30\m201130.mat"; n=2; 
+% fname = "H:\2020.11.30\m201130.mat"; n=2; 
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
 addpath("C:\Users\orica\Dropbox\fcns_and_decript");
 addpath('C:\Users\orica\Dropbox\master degree\codes');
@@ -49,25 +49,43 @@ addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
 addpath("C:\Users\Ori\Dropbox\master degree\codes")
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 % description = Summary.description
-% fname = "E:\191119\m191119.mat";n=2; % take from description
-fname = "G:\181218\m181218.mat"; n=2;
+fname = "G:\180905\m180905.mat";n=2; % take from description
+% fname = "G:\181218\m181218.mat"; n=2;
+% fname = "G:\191119\m191119.mat"; n=2;
 % fname = "E:\200121\m200121.mat"; n=5;
 [cf1 cfn trsh0]=strt_up(fname, n);  
-
-
 result = Summary2.result;
 params = Summary2.params;
-% [cf1 cfn trsh0]=strt_up(fname, n);  
 fn = fieldnames(result);
-retmapsAll = figure("name","retmapsAll");
+expectedResponse = imread("C:\Users\orica\OneDrive\Desktop\2nd degree\comparison article\ExpectedResponsesImages\loc8_expected.bmp");
+expectedResponse = imread("C:\Users\orica\OneDrive\Desktop\2nd degree\comparison article\ExpectedResponsesImages\loc9_expected3_leftright.bmp");
+expectedResponse = imread("C:\Users\orica\OneDrive\Desktop\2nd degree\comparison article\ExpectedResponsesImages\loc4_expected.bmp");
+%% Plot retmaps of a loaded Summary2
+result = Summary2.result;
+params = Summary2.params;
+fn = fieldnames(result);
+retmapsAll = figure("name","retmapsAll",'Position', [100 100 1400 600]);
 % indmapsAll = figure("name","indmapsAll");
-Titles = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
-for i=1:length(fn)-1 % iterate the methods    
-    figure(retmapsAll); subplot(2,4,i)
+% Titles = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
+Titles ={'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT','Expected Retinotopy'};
+flag=0;
+for i=1:length(fn)-1 % iterate the methods  
+%     if i==1
+%         for iii=1:size(result.(fn{i}).maps,3)
+%             result.(fn{i}).maps(:,:,iii) = result.(fn{i}).maps(:,:,iii).*R;
+%         end   
+%     end
     [~,r] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,0,fn{i},95);
-    imf2(r);
+    figure(retmapsAll); subplot(2,4,i)
+    imf2(r);xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
 %     imagesc(rshp(result.(fn{i}).retinotopicMap));
-    title(Titles{i});
+    title(Titles{i}); hold on;
+    if ~flag
+        rectangle('Position',[4.5,5,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+        text(4.4,4.8,'1mm','color',[1 1 1],'fontsize',12);
+        flag=1;
+    end
+%     annotation(retmapsAll,'doublearrow',[0.1 0.1],[.1 0]);
 %     if contains(fn{i},'nadav','ignorecase',true)
 %         title('M.P.T');
 %     elseif contains(fn{i},'tscano','ignorecase',true)
@@ -79,7 +97,8 @@ for i=1:length(fn)-1 % iterate the methods
 %     end
 %     r = plotMaps(result.(fn{i}).maps,fn{i},1);
 end
-subplot(2,4,8)
+subplot(2,4,8);
+imshow(expectedResponse);
 title(Titles{end});
 % with and without GLM
 % figure;
@@ -89,31 +108,65 @@ title(Titles{end});
 % subplot 122
 % [~,r] = retinotopicMapFromIndividualMaps(result.TSCAwGLM.maps,0,'TSCA with GLM',92);
 % imf2(r);title('TSCA after GLM denoising');
-%% plot average response of 1 condition
+%% average response of 1 condition
 t = linspace(0,1,100);
-figure;
-plot(t,params.experiment.responseSig)
-ylabel('amp [au]');xlabel('time [sec]');
+% figure;
+% plot(t,params.experiment.responseSig)
+% ylabel('amp [au]');xlabel('time [sec]');
 avgRes = zeros(1,params.experiment.T1);
 zz = params.experiment.ZZ;
 zz3d = rshp(zz);
-avgAll = MinMaxNorm(mean(zz3d,3));
+avgAll = MinMaxNorm(max(zz3d,[],3));
+[row,col] = find(avgAll>prctile(avgAll(:),90));
+ROI = zeros(size(brn));
+for ind=1:length(row)
+    ROI(row(ind),col(ind)) = 1;
+end
+ROI = medfilt2(ROI,[5,5]);
+AvgAll2 = avgAll.*ROI;
 brn3d = reshape(repmat(MinMaxNorm(brn),1,1,3),[],3);
 % avgAll(avgAll(:,1)<prctile(avgAll(:,1),95),:) = brn3d(avgAll(:,1)<prctile(avgAll(:,1),95),:);
-figure;imf2(brn3d);hold on;imf2(rshp(avgAll),prctile(avgAll(:),93));
-zzROI = [];
+%% plot for main 
+figure;
+subplot 221;
+imf2(rshp(avgAll));
+xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+rectangle('Position',[4.5,5,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+text(4.4,4.8,'1mm','color',[1 1 1],'fontsize',12);
+subplot 222;
+imf2(brn3d);hold on;imf2(rshp(AvgAll2),prctile(avgAll(:),90));
+xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+zzROI2 = [];
 for i =1:params.experiment.N
     thisMap = result.TSCAwGLM.maps(:,:,i);
-    [row,col] = find(thisMap>0.8);
-    thisZZ = zz(:,(i-1)*params.experiment.T1+1:i*params.experiment.T1);
-    zzROI = [zzROI,mean(thisZZ)];
-    avgRes = avgRes + mean(thisZZ(sub2ind(size(brn),row,col),:));
+    [row,col] = find(thisMap>0.7);
+%     [row,col] = find(ROI);
+    thisZZ = zz(sub2ind(size(brn),row,col),(i-1)*params.experiment.T1+1:i*params.experiment.T1);
+    zzROI2 = [zzROI2,mean(thisZZ)];
+    avgRes = avgRes + mean(thisZZ);
 end
+avgRes = avgRes/(params.experiment.N); avgRes = avgRes-avgRes(1);
+zzROI2 = 5*(zzROI2-min(zzROI2))/(max(zzROI2)-min(zzROI2));zzROI2=zzROI2-zzROI2(1);
+subplot 223;plot( 0:0.01:8-0.01, zzROI2,'linewidth',1.5 );ylabel('Z score');xlabel('time [sec]');box off;
+subplot 224;plot(t,avgRes,'linewidth',1.5);ylabel('Z score');xlabel('time [sec]'); box off;
+xticks([0:0.1:1]);
+%% plot for supplmentary materil
 figure;
-% yyaxis left
-plot(t,avgRes/params.experiment.N);ylabel('Z score');
+yyaxis left
+plot(t,avgRes/params.experiment.N);ylabel('Z score');xlabel('time [sec]'); box off;
 yyaxis right
 plot(t,params.experiment.responseSig)
-ylabel('amp [au]');xlabel('time [sec]');
+ylabel('amp [au]');xlabel('time [sec]');xticks([0:0.1:1]);
 legend('Experimental Average Response','Theoretical Response');
-figure;plot(0:0.01:8-0.01,zzROI);ylabel('Z score');xlabel('time [sec]');
+% end for supplmentary
+%% figure 7 main
+figure;
+subplot 121
+boxplot([AllmedS{1};AllmedS{2};AllmedS{3};AllmedS{4};AllmedS{5};AllmedS{6};AllmedS{7}],[makeClustVector(cellfun(@(x) size(x,1),AllmedS))]','labels',char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+% title('Median Silhouette index');
+ylabel('median Adjusted SI');set(gca,'XTickLabelRotation',45);
+box off
+subplot 122
+boxplot([AllDBI{1},AllDBI{2},AllDBI{3},AllDBI{4},AllDBI{5},AllDBI{6},AllDBI{7}],char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+ylabel('Adjusted DBI');set(gca,'XTickLabelRotation',45);
+box off

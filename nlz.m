@@ -6,7 +6,8 @@ addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
 addpath("C:\Users\Ori\Dropbox\master degree\codes")
 
 %fname='C:\Users\Ori\Desktop\Ori\2nd degree\mtdt\191212\m191212.mat';
-fname = "H:\2021.01.18\m210118.mat";
+% fname ="H:\2021.02.15\m210215.mat";
+fname = "H:\2021.03.02\m210302.mat";
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% copy&paste below%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -20,7 +21,7 @@ global bsln fs sz ump rot fgn brn frq cmap lgn scl lgn00 fnm c_f vms plt_on pt p
 % cfn=cfn0; sz=sz0; brn=brn0; restore to original condition
 
 %% upload data
-clz; n=2; [cf1 cfn trsh0]=strt_up(fname, n);
+clz; n=1; [cf1 cfn trsh0]=strt_up(fname, n);
 %% run till here
 
 %% initial nlz

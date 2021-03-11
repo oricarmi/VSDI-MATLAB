@@ -27,37 +27,39 @@ for kk = 1:length(noiseSig) % iterate different noise sig
         % locs = [0.25 0.25; 0.25 0.75; 0.5 0.5; 0.75 0.25; 0.75 0.75];
         locs = [0.4 0.4; 0.4 0.6; 0.5 0.5; 0.6 0.4; 0.6 0.6]; ind2plot = [1,5,9,13,17];
         DC = 0.02; r = 4;
-        figure;ind2plot = [1,5,9,13,17];
         amp = (1.5-0.5).*rand(1,5)+0.5; % amplitude distributed U~[0.5 1.5]
         for i=1:5
             signals(i).time = amp(i).*(2.5.*normpdf(0:0.1:(T-1)/10,stim_time(i),1)); % normpdf with peak amplitude 1, times random amplitude
-            signals(i).space = MinMaxNorm(imgaussfilt(double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2),sqrt(r)))+DC; % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
+            signals(i).space = MinMaxNorm(imgaussfilt(double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2),sqrt(r)))+DC; % what is larger than r^2 is 1 (white), what is smaller is 0 (black)'
 %             signals(i).space = double((I-m*locs(i,1)).^2+(J-m*locs(i,2)).^2<r^2); % what is larger than r^2 is 1 (white), what is smaller is 0 (black)
-            subplot(3,6,ind2plot(i))
-            imagesc(signals(i).space); colormap(gray);
-            xlabel('pixels'); ylabel('pixels');
-%             title(['sig. ' num2str(i) ' - spatial']);
-            subplot(3,6,ind2plot(i)+1)
-            plot(t,signals(i).time,'color','k');
+        end
+        % plot
+        figure(1122);ind2plot = [1,3,5,7,9];%ind2plot = [1,5,9,13,17];
+        figure(2211);
+        mapSigs = cat(3,signals(:).space);
+        colorz = squeeze(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
+        [retinotopicMap,~,maxind] = retinotopicMapFromIndividualMaps(mapSigs,0,'sigs',85);
+        figure;
+        imagesc(rshp(retinotopicMap));xlabel('pixels'); ylabel('pixels');
+        for i=1:5
+            figure(1122);
+            [retinotopicMap,~,maxind] = retinotopicMapFromIndividualMaps(mapSigs(:,:,i),0,['simulation_' num2str(i)],85);
+            subplot(3,3,ind2plot(i));
+            imagesc(rshp(retinotopicMap));xlabel('pixels'); ylabel('pixels');
+            title(['sig. ' num2str(i) ' - spatial']);
+            figure(2211);
+            plot(t,signals(i).time,'color',colorz(i,:));hold on;
 %             title(['sig. ' num2str(i) ' - temporal']); 
-            xlabel('time [sec]'); ylabel('Amp. [au]');
+            xlabel('time [sec]'); ylabel('Amp. [au]');box off;
             xticks(1:2:9);
         end
         if ~flag % do this only once
             mapSigs = cat(3,signals(:).space);
-            [~,~,maxind] = retinotopicMapFromIndividualMaps(mapSigs,0,'sigs',95);
+            [retinotopicMap,~,maxind] = retinotopicMapFromIndividualMaps(mapSigs,0,'sigs',85);
             [clusterEvalSig,clusterEval2Sig] = ClusterEvaluationSim2(maxind);
-%             figure(12345);
-%             boxplot(clusterEvalSig{1}(:).DBI));
-%             title('boxplot of Davies-Bouldin Index of all methods - simulation');
-%             ylabel('DB Index');
-            figure(12345);
-            boxplot(clusterEval2Sig.s,makeClustVector(length(cat(1,clusterEval2Sig.s))));
-            title('Silhouette Index of simulated responses');
-            ylabel('Si');ylim([-1,1]);
-
             flag=1;
         end
+
         %% construct noise
         [I1,I2] = ndgrid([repmat(linspace(0,2*pi,m/2),1,2)]',[repmat(linspace(0,2*pi,m/2),1,2)]);
         noises(1).time = normrnd(0,noiseSig(kk),T,1);
@@ -116,7 +118,15 @@ for kk = 1:length(noiseSig) % iterate different noise sig
 %             imshow(reshape(ZZZZ(:,ind2show(i)),m,[])); colormap(gray);
 %             title(['Frame ' num2str(ind2show(i))]);
 %         end
-        
+        figure;
+        subplot(2,2,1);
+        imagesc(signals(2).space);colormap(gray);xlabel('pixels'); ylabel('pixels');
+        subplot(2,2,2);
+        plot(t(1:200),signals(1).time(1:200)); xlabel('time [sec]'); ylabel('amp [au]');
+        subplot(2,2,3);
+        imagesc(rshp(Z(:,300)));colormap(gray);xlabel('pixels'); ylabel('pixels');
+        subplot(2,2,4);
+        plot(t(1:200),(Z(sub2ind([40,40],repmat([15:17]',3,1),repmat([23:25]',3,1)),201:400))); xlabel('time [sec]'); ylabel('amp [au]');
         %% ============================= TSCA no GLM ===================================
         noiseNew.time = eye(T)/T; noiseNew.space = []; mapTSCA = zeros(m,m,length(signals));
         noise2New.time = createToeplitz(3,0.1,1,1,T); noise2New.space = [];

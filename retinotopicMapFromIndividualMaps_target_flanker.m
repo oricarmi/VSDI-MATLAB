@@ -1,4 +1,4 @@
-function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualMaps(maps,weights,Ttle,pTile,manualSelection)
+function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualMaps_target_flanker(maps,weights,Ttle,pTile,manualSelection)
     global brn ump lgn params
     % map should be 3 dimentional, m by m by #signals
     switch nargin
@@ -48,7 +48,7 @@ function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualM
             figure;imagesc(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
         end
     else % real data
-        retinotopicMap = hsv2rgb(maxind/params.experiment.N,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
+        retinotopicMap = hsv2rgb(maxind/3,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         retinotopicMap2 = squeeze(retinotopicMap); retinotopicMap2(sum(retinotopicMap2,2)==0,:) = tempbrn(sum(retinotopicMap2,2)==0,:); % make brain background instead of black
         maxind = rshp(maxind);
         maxind(sum(rshp(retinotopicMap),3)==0)=0;
@@ -60,44 +60,20 @@ function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualM
             end
             title(Ttle);
     %         figure;imagesc(reshape(retinotopicMap2,size(map,1),size(map,2),3));title(Ttle); 
-            colorz = hsv2rgb([1:params.experiment.N]./params.experiment.N,ones(1,params.experiment.N),ones(1,params.experiment.N));
+            colorz = hsv2rgb([1:3]./3,ones(1,3),ones(1,3));
             figure("name",sprintf('colorCode %s', Ttle))
-            switch params.experiment.what  
-                case 8 % loc 8
-                    index2plot = [11,3,15,7,5,13,1,9]; % 8 locs
-                    for i=1:length(colorz)
-                        subplot(3,5,index2plot(i));
-                        set(gca,'Color',colorz(1,i,:));
-                        set(gca,'xtick',[]);set(gca,'ytick',[]);
-                        title(lgn(i+2,:));
-                    end
-                case 9  % loc 9
-                    index2plot = [5,7,3,8,2,9,1,6,4];
-                    for i=1:length(colorz)
-                        subplot(3,3,index2plot(i));
-                        set(gca,'Color',colorz(1,i,:));
-                        set(gca,'xtick',[]);set(gca,'ytick',[]);
-                        title(lgn(i+1,:));
-                    end
-                case 4 % loc 4
-                    index2plot = [3,2,1,4];
-                    for i=1:length(colorz)
-                        subplot(2,2,index2plot(i));
-                        set(gca,'Color',colorz(1,i,:));
-                        set(gca,'xtick',[]);set(gca,'ytick',[]);
-                        title(lgn(i+2,:));
-                    end
-                case 52 % loc 5 @2Hz
-                    index2plot = [7,3,1,9,5];
-                    for i=1:length(colorz)
-                        subplot(3,3,index2plot(i));
-                        set(gca,'Color',colorz(1,i,:));
-                        set(gca,'xtick',[]);set(gca,'ytick',[]);
-                        title(lgn(i+2,:));
-                    end
-                otherwise % sweep @2Hz
-                    imagesc(colorz); 
-                    set(gca,'ytick',[]);
+            for i=1:length(colorz);
+                subplot(1,3,i);
+                set(gca,'Color',colorz(1,i,:));
+                set(gca,'xtick',[]);set(gca,'ytick',[]);
+                switch i
+                    case 1
+                        title('left flanker')
+                    case 2
+                        title('target (middle)');
+                    case 3
+                        title('right flanker');
+                end     
             end
         end
     end

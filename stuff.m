@@ -526,6 +526,59 @@ ylabel('DBI');
 % figure;boxplot([AllS_movingBars;AllS_loc8;AllS_loc4],makeClustVector([length(AllS_movingBars);length(AllS_loc8);length(AllS_loc4)]),'labels',{'9 moving Bars','8 location grid','4 location grid'});
 % ylabel('Si');title('Boxplot of silhouette values - 9 moving bars, 8 and 4 location grid');
 
+%% adjusted silhouette and adjusted DBI between moving bars and loc 8
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\comparision results 2';
+files = dir(path);
+AllS_movingBars = [];
+AllS_loc8 = [];
+AllS_loc4 = [];
+AllDBI_movingBars = [];
+AllDBI_loc8 = [];
+AllDBI_loc4 = [];
+for i=[8,9,20,19,17,23] % iterate files (except last one which is NIR)  
+    load(fullfile(files(i).folder,files(i).name)); % load summary
+    result = Summary2.result;
+    fn = fieldnames(result);
+    params = Summary2.params;
+    RR = mean(params.experiment.optimalMaps.orig,3)>prctile(reshape(mean(Summary2.params.experiment.optimalMaps.orig,3),[],1),85);
+    [~,~,maxind2] = retinotopicMapFromIndividualMaps(result.TSCAwGLM.maps,0,'',93);
+    maxind2 = maxind2.*RR;
+        for k=1:Summary2.params.experiment.N % iterate the maps of this method
+            [row,col] = find(maxind2==k);
+            XX{k} = [row,col];
+        end
+    [ss,h] = silhouette(cat(1,XX{:}),makeClustVector(cellfun(@(x) size(x,1),XX))');
+    NN = histcounts(makeClustVector(cellfun(@(x) size(x,1),XX))'); % size of each cluster
+    expectedClustSize = length(makeClustVector(cellfun(@(x) size(x,1),XX))')/params.experiment.N; % expected cluster size
+    NCM = (params.experiment.N-length(unique(NN))); % number of clusters mismatch
+    SP = abs(NN - expectedClustSize)/expectedClustSize; % size penalty of each cluster
+    TP = SP + NCM; % total penalty
+%     disp([fn{j} ' ' num2str(mean(TP))])
+    TP_allPoints = repelem(TP,NN);
+    ss = ss - TP_allPoints';
+    [~,~,~,~,~,DBI] = ClusterSimilarity(XX);
+    DBI = DBI + mean(TP);
+    if contains(files(i).name,'horz')
+        AllS_movingBars = [AllS_movingBars;median(ss)];
+        AllDBI_movingBars = [AllDBI_movingBars;DBI];
+    elseif contains(files(i).name,'loc 8')
+        AllS_loc8 = [AllS_loc8;median(ss)];
+        AllDBI_loc8 = [AllDBI_loc8;DBI];
+    else % loc 4
+        AllS_loc4 = [AllS_loc4;ss];
+        AllDBI_loc4 = [AllDBI_loc4;DBI];
+    end
+    clear XX maxind R ss
+end
+figure;
+subplot 121
+boxplot([AllS_movingBars;AllS_loc8],makeClustVector([length(AllS_movingBars);length(AllS_loc8)]),'labels',{'9 moving bars','8 location grid'});
+ylabel('Median Adjusted SI');
+%title('Boxplot of silhouette values - 9 moving bars and 8 location grid');
+subplot 122
+boxplot([AllDBI_movingBars,;AllDBI_loc8],makeClustVector([length(AllDBI_movingBars);length(AllDBI_loc8)]),'labels',{'9 moving bars','8 location grid'});
+%title('Davies-Bouldin Index');
+ylabel('Adjusted DBI');
 
 %% show cluster results of simulation
 figure;
@@ -546,6 +599,7 @@ for i=1:6
     meanRsim{i} = mean(cat(3,thisSNR_Summary{8}{i}(:).R),3);
     stdRsim{i} = std(cat(3,thisSNR_Summary{8}{i}(:).R),0,3);
 end
+
 %% 2D gaussian fit to all images and show in retinotopic map
 zfit2 = struct;
 for j=1:length(fn)
@@ -560,7 +614,7 @@ for j=1:length(fn)
         [~,zfit2.(fn{j}).retinotopicMap] = retinotopicMapFromIndividualMaps(zfit2.(fn{j}).gaussFits,1,fn{j},96);
     end
 end
-%%
+%% calculate adjusted Silhouettte Index (Si)
 N = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/8;
 NN = histcounts(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))');
 expectedClustSize = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/8;
