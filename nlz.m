@@ -1,14 +1,14 @@
 clear all; close all; clc;
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
-addpath("C:\Users\orica\Dropbox\fcns_and_decript");
-addpath('C:\Users\orica\Dropbox\master degree\codes');
-addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
-addpath("C:\Users\Ori\Dropbox\master degree\codes")
+addpath("C:\Users\orica\Dropbox\fcns_and_decript"); % Nadav Code
+addpath('C:\Users\orica\Dropbox\master degree\codes'); % Ori Code
+% addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
+% addpath("C:\Users\Ori\Dropbox\master degree\codes")
 
 %fname='C:\Users\Ori\Desktop\Ori\2nd degree\mtdt\191212\m191212.mat';
 % fname ="H:\2021.02.15\m210215.mat";
-fname = "H:\2021.03.02\m210302.mat";
-
+fname = "H:\2021.05.20\m210520.mat";
+% fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.15 - target flankers\m210315.mat";
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% copy&paste below%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 global bsln fs sz ump rot fgn brn frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn

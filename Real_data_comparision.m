@@ -6,10 +6,12 @@ clear all; close all; clc;
 % fname = "E:\200121\m200121.mat"; n=4;
 % fname = "E:\180904\m180904.mat"; n=4;
 % fname ="G:\comparision results 2\loc 8,181218 n=2.mat"; n=2;
-% fname = "E:\181218\m181218.mat"; n=2;
+fname = "H:\2021.03.30\m210330.mat";n=4;
+% fname = "G:\181218\m181218.mat"; n=2;
 % fname = "E:\180801\m180801.mat"; n=3;
 % fname = "D:\2019.07.10\m190710.mat"; n=2;
-fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.03 - taget flankers\m210303.mat"; n=3;
+% fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.03 - taget flankers\m210303.mat"; n=3;
+% fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.15 - target flankers\m210315.mat";n=3;
 % fname = "G:\2019.12.11\m191211.mat"; n=3;
 % fname = "H:\2020.11.30\m201130.mat"; n=2; 
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
@@ -24,9 +26,9 @@ result = struct('TSCA',struct,'Tmax',struct,'AOF',struct,'Corr',struct,'GLM',str
 % <----- generate retinotopic maps from the individual maps
 fn = fieldnames(result);
 for i=1:length(fn) % iterate the methods 
-    [~,result.(fn{i}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,1,fn{i},80);
+    [~,result.(fn{i}).retinotopicMap] = retinotopicMapFromIndividualMaps(result.(fn{i}).maps,1,fn{i},90);
 end
-[~,resultBoth] = retinotopicMapFromIndividualMaps(tscaBoth.withGLM,1,'GLM+TSCA');
+[~,resultBoth] = retinotopicMapFromIndividualMaps(tscaBoth.withGLM,1,'GLM+TSCA',90);
 % ---- RUN UNTIL HERE -----
 % ---->
 [result.TSCA.performance,result.Tmax.performance,result.AOF.performance,result.Corr.performance,result.GLM.performance,result.Nadav.performance] = performanceRealData(result);
@@ -129,12 +131,12 @@ brn3d = reshape(repmat(MinMaxNorm(brn),1,1,3),[],3);
 %% plot for main 
 figure;
 subplot 221;
-imf2(rshp(avgAll));
+imf2(rshp(avgAll)); colorbar;
 xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
 rectangle('Position',[4.5,5,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
 text(4.4,4.8,'1mm','color',[1 1 1],'fontsize',12);
 subplot 222;
-imf2(brn3d);hold on;imf2(rshp(AvgAll2),prctile(avgAll(:),90));
+imf2(brn3d);hold on;imf2(rshp(AvgAll2),prctile(avgAll(:),90)); colorbar;
 xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
 zzROI2 = [];
 for i =1:params.experiment.N

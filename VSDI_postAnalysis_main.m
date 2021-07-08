@@ -3,18 +3,20 @@
 clear all; close all; clc;
 % fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.01.18\m210118.mat"; % path to .mat file (mYYMMDD)
 % fname="D:\dataForComparison\181218\m181218.mat";
-% fname ="H:\2021.02.17\m210217.mat";
+% fname = "H:\2021.03.30\m210330.mat";
+fname = "H:\2021.04.29\m210429.mat";
+% fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.15 - target flankers\m210315.mat";
 % fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.03 - target flankers\m210303.mat";
-fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.09 - target flankers\m210309.mat";
+% fname = "C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.09 - target flankers\m210309.mat";
 % fname ="C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.01.18 - target flankers\m210118.mat";
 addpath("C:\Users\orica\Dropbox\fcns_and_decript");
 addpath('C:\Users\orica\Dropbox\master degree\codes');
-addpath("C:\Users\Ori\Dropbox\fcns_and_decript")
-addpath("C:\Users\Ori\Dropbox\master degree\codes")
+% addpath("C:\Users\Ori\Dropbox\fcns_and_decript");
+% addpath("C:\Users\Ori\Dropbox\master degree\codes");
 global bsln fs sz ump rot fgn brn brn0 frq cmap lgn scl lgn00 fnm c_f vms plt_on pt pc vc xs prms cfn cfn0 signal2_smooth basis params
 %%
 what = 9; % type of experiment. 8 - loc 8. 9 - loc 9 grid. 92 - 9 moving bars/diagonal dots, 2Hz
-n=4; % experiment number 
+n=2; % experiment number 
 % cd('C:\Users\Ori\Desktop\Ori\2nd degree\mtdt');
 [cf1 cfn trsh0]=strt_up(fname, n); % parse .mat file (mYYMMDD) (legacy code)
 Z = [];
@@ -36,6 +38,7 @@ end
 %     ChooseNoiseFreqs(Z);
 % end
 defineParameters("C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\VSDI-MATLAB\paramsori.csv",what,rshp(Z)); % lab pc
+% params.experiment.theoreticalSigs = circshift(params.experiment.theoreticalSigs,-5); % for NIR
 ZZ = preProcess(Z); % preprocessing
 implay(rshp(ZZ),20); % play video
 [ZZZ,ZZZZ,ZZZZZ,beta] = GLM_VSDI(ZZ,[0.78 3.3 6.6],params.experiment.theoreticalSigs'); % glm denoising

@@ -41,13 +41,16 @@ function [retinotopicMap,retinotopicMap2,maxind] = retinotopicMapFromIndividualM
     if size(maps,1)==40 % simulation
         retinotopicMap = squeeze(hsv2rgb(maxind/5,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*(maxmap-min(maxmap))./(max(maxmap)-min(maxmap)))); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         maxind = reshape(maxind,40,40);
-        maxind(sum(rshp(retinotopicMap),3)==0)=0;
+        maxind(sum(rshp(retinotopicMap),3)==0)=0; 
         retinotopicMap2 = [];
-        if weights
-            figure;imagesc(reshape(retinotopicMap,size(maps,1),size(maps,2),3));title(Ttle); 
-            figure;imagesc(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
+        if weights>1
+%             figure;imagesc(reshape(retinotopicMap,size(maps,1),size(maps,2),3));title(Ttle); 
+%             figure;imagesc(hsv2rgb([1:5]./5,ones(1,5),ones(1,5)));
         end
     else % real data
+        if weights>1
+            maxind = reshape(medfilt2(rshp(maxind),[3,3]),[],1);
+        end
         retinotopicMap = hsv2rgb(maxind/3,ones(size(maxind)),double(maxmap>prctile(maxmap,pTile)).*maxmap); % hue is index of max, saturation is 1 and value is max value (minmax normalized)
         retinotopicMap2 = squeeze(retinotopicMap); retinotopicMap2(sum(retinotopicMap2,2)==0,:) = tempbrn(sum(retinotopicMap2,2)==0,:); % make brain background instead of black
         maxind = rshp(maxind);

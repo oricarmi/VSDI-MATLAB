@@ -7,7 +7,7 @@ figure;
 tempbrn = repmat(reshape((brn-min(brn))./(max(brn)-min(brn)),[],1),1,1,3);
 for i=1:9
     subplot(3,3,i)
-    imf2(rshp(tempbrn)); hold on; imf2(mapTSCA(:,:,i),0.75);
+    imf2(rshp(tempbrn)); hold on; imf2(mapTSCA(:,:,i),0.7);
     if i<4
         title('target');
     elseif i<7
@@ -20,18 +20,17 @@ end
 figure;
 subplot(1,3,1);
 avgTargetSpatial = mean(mapTSCA(:,:,1:3),3);
-imf2(rshp(tempbrn)); hold on; imf2(avgTargetSpatial,0.85);
+imf2(rshp(tempbrn)); hold on; imf2(avgTargetSpatial,0.8);
 title('target');
 subplot(1,3,2)
 avgFlankersSpatial = mean(mapTSCA(:,:,4:6),3);
-imf2(rshp(tempbrn)); hold on; imf2(avgFlankersSpatial,0.85);
+imf2(rshp(tempbrn)); hold on; imf2(avgFlankersSpatial,0.75);
 title('flankers');
 subplot(1,3,3)
 avgCombinedSpatial = mean(mapTSCA(:,:,7:9),3);
-imf2(rshp(tempbrn)); hold on; imf2(avgCombinedSpatial,0.85);
+imf2(rshp(tempbrn)); hold on; imf2(avgCombinedSpatial,0.75);
 title('combined');
-figure;
-[~,r] = retinotopicMapFromIndividualMaps_target_flanker(cat(3,avgTargetSpatial,avgFlankersSpatial),1,'',97);
+[~,r,maxind] = retinotopicMapFromIndividualMaps_target_flanker(cat(3,avgTargetSpatial,avgFlankersSpatial),2,'',96);
 %% get target and flankers ROI
 ZZ3d = rshp(ZZ);
 if input('choose manually?')
@@ -45,18 +44,18 @@ if input('choose manually?')
     indFlankersROI = sub2ind(sz,row,col);
     figure;
     subplot 121
-    imf2(targetROI_manual);title('target ROI');
+    imf2(tempbrn);hold on;imf2(targetROI_manual,0);title('target ROI');
     subplot 122
-    imf2(flankersROI_manual);title('flankers ROI');
+    imf2(tempbrn);hold on;imf2(flankersROI_manual,0);title('flankers ROI');
 else
-    [row,col] = find( imopen(double(avgTargetSpatial>=0.73),strel('disk',2)) );
+    [row,col] = find( imopen(double(maxind==1),strel('disk',5)) );
     targetROI = zeros(sz); 
     for i = 1:length(row)
         targetROI(row(i),col(i)) = 1; 
     end
 %     targetROI = imopen(targetROI,strel('disk',5));
     indTargetROI = sub2ind(sz,row,col);
-    [row,col] = find( imopen(double(avgFlankersSpatial>=0.83),strel('disk',2)) );
+    [row,col] = find( imopen(double(maxind==2),strel('disk',3)) );
     flankersROI = zeros(sz); 
     for i = 1:length(row)
         flankersROI(row(i),col(i)) = 1; 
@@ -64,15 +63,15 @@ else
     indFlankersROI = sub2ind(sz,row,col);
     figure;
     subplot 121
-    imf2(targetROI);title('target ROI');
+    imf2(tempbrn);hold on;imf2(targetROI,0);title('target ROI');
     subplot 122
-    imf2(flankersROI);title('flankers ROI');
+    imf2(tempbrn);hold on;imf2(flankersROI,0);title('flankers ROI');
 end
 %% calculate average temporal repsones
 t = linspace(0,size(Z,2)/100,size(Z,2));
 figure;plot(t,mean(ZZ(indTargetROI,:))); 
 xlabel('time [sec]'); ylabel('STD'); title('target ROI over time');
-avgTarget = mean([ZZ(indTargetROI,1:100);ZZ(indTargetROI,101:200);ZZ(indTargetROI,201:300)]);avgTarget = (avgTarget - avgTarget(1))*1.2; 
+avgTarget = mean([ZZ(indTargetROI,1:100);ZZ(indTargetROI,101:200);ZZ(indTargetROI,201:300)]);avgTarget = (avgTarget - avgTarget(1)); 
 avgFlankers = mean([ZZ(indTargetROI,301:400);ZZ(indTargetROI,401:500);ZZ(indTargetROI,501:600)]);avgFlankers = (avgFlankers - avgFlankers(1))/2; 
 avgCombined = mean([ZZ(indTargetROI,601:700);ZZ(indTargetROI,701:800);ZZ(indTargetROI,801:900)]);avgCombined = avgCombined - avgCombined(1); 
 %% show temporal evolution of target ROI
@@ -104,7 +103,7 @@ title('combined');xlabel('time [sec]'); ylabel('STD');
 t = linspace(0,size(Z,2)/100,size(Z,2));
 figure;plot(t,mean(ZZ(indFlankersROI,:)));
 xlabel('time [sec]'); ylabel('STD'); title('flankers ROI over time');
-avgTargetF = mean([ZZ(indFlankersROI,1:100);ZZ(indFlankersROI,201:300)]);avgTargetF = (avgTargetF - avgTargetF(1)); 
+avgTargetF = mean([ZZ(indFlankersROI,1:100);ZZ(indFlankersROI,201:300)]);avgTargetF = (avgTargetF - avgTargetF(1))/1.3; 
 avgFlankersF = mean([ZZ(indFlankersROI,301:400);ZZ(indFlankersROI,401:500);ZZ(indFlankersROI,501:600)]);avgFlankersF = avgFlankersF - avgFlankersF(1); 
 avgCombinedF = mean([ZZ(indFlankersROI,601:700);ZZ(indFlankersROI,701:800);ZZ(indFlankersROI,801:900)]);avgCombinedF = avgCombinedF - avgCombinedF(1); 
 
@@ -133,9 +132,9 @@ plot(t(1:100),avgCombinedF)
 title('combined');xlabel('time [sec]'); ylabel('STD');
 %% show target ROI target, flankers and combined overlayed
 figure;
-plot(t(1:100),avgFlankers);
+plot(t(1:100),avgTarget);
 xlabel('time [sec]'); ylabel('STD');title('average temporal response in target ROI');
-xline(0.07,'--r'); text(0.072,-0.5,'70 [msec]','color','r');xline(0.35,'--r'); text(0.352,-0.5,'350 [msec]','color','r');
+xline(0.07,'--r'); text(0.072,0.5,'70 [msec]','color','r');xline(0.35,'--r'); text(0.352,0.5,'350 [msec]','color','r');
 % hold on;
 % plot(t(1:100),avgFlankers);
 % plot(t(1:100),avgCombined);
@@ -156,7 +155,10 @@ plot(t(1:100),avgFlankers);
 plot(t(1:100),avgTarget+avgFlankers);
 plot(t(1:100),avgCombined);
 legend('target','flankers','linear summation','combined');xlabel('time [sec]'); ylabel('STD');
-title('average temporal response in target ROI');
+title('avg response in target ROI');
+%% show spatial map of differnece between linear summation and combined 
+differenceSpatial = avgTargetSpatial + avgFlankersSpatial - avgCombinedSpatial;
+figure;imf2(differenceSpatial);colorbar;title('Linear Summation - Combined (entire brain)');
 %% Cross correlation between target & flanker and target & combined
 % [rTF,lags] = xcorr(avgTarget,avgFlankers,20,'coeff');
 % [rTC] = xcorr(avgTarget,avgCombined,20,'coeff');
@@ -180,12 +182,29 @@ plot(t2(1:500),avgFlankers2);
 plot(t2(1:500),avgTarget2+avgFlankers2);
 plot(t2(1:500),avgCombined2);
 legend('target','flankers','linear summation','combined');xlabel('time [sec]'); ylabel('STD');
-title('avg. temporal res. (upsampled) - target ROI ');
+title('avg. response (upsampled)');
+%% LPF to make it smoother and overlay
+avgTarget2 = interp(avgTarget,5);
+avgFlankers2 = interp(avgFlankers,5);
+avgCombined2 = interp(avgCombined,5);
+t2 = linspace(0,size(Z,2)/100,size(Z,2)*5);
+filterSize = 20;
+figure;
+hold on;
+[t2_smooth,avgTarget2_smooth] = filter_FIR_and_fix_delay(ones(1,filterSize),filterSize,t2(1:500),avgTarget2);avgTarget2_smooth = avgTarget2_smooth-avgTarget2_smooth(1);
+[t2_smooth,avgFlankers2_smooth] = filter_FIR_and_fix_delay(ones(1,filterSize),filterSize,t2(1:500),avgFlankers2);avgFlankers2_smooth = avgFlankers2_smooth-avgFlankers2_smooth(1);
+[t2_smooth,avgCombined2_smooth] = filter_FIR_and_fix_delay(ones(1,filterSize),filterSize,t2(1:500),avgCombined2);avgCombined2_smooth = avgCombined2_smooth-avgCombined2_smooth(1);
+plot(t2_smooth,avgTarget2_smooth);
+plot(t2_smooth,avgFlankers2_smooth);
+plot(t2_smooth,avgTarget2_smooth+avgFlankers2_smooth);
+plot(t2_smooth,avgCombined2_smooth);
+legend('target','flankers','linear summation','combined');xlabel('time [sec]'); ylabel('STD');
+title('avg. response (upsampled)');
+
 %% Cross correlation between target & flanker and target & combined (upsampled)
 [rTF2,lags2] = xcorr(avgTarget2,avgFlankers2,20,'coeff');
 [rTC2] = xcorr(avgTarget2,avgCombined2,20,'coeff');
 [rFC2] = xcorr(avgFlankers2,avgCombined2,20,'coeff');
-rTF2 = fliplr(rTF2);
 lagsTime = lags2./(fs*5)*1000;
 figure;
 subplot 311
@@ -212,7 +231,7 @@ plot(t2(1:500),avgFlankersF2);
 plot(t2(1:500),avgTargetF2+avgFlankersF2);
 plot(t2(1:500),avgCombinedF2);
 legend('target','flankers','linear summation','combined');xlabel('time [sec]'); ylabel('STD');
-title('average temporal response in flankers ROI');
+title('avg  response (upsampled)');
 
 %% Cross correlation between target & flanker and target & combined (upsampled) - Flankers ROI
 [rTF22,lags22] = xcorr(avgTargetF2,avgFlankersF2,20,'coeff');
@@ -232,37 +251,8 @@ subplot 313
 plot(lagsTime22,rFC22);title('cross correlation between flankers and combined'); xlabel('lags [msec]'); ylabel('\rho');%ylim([0.8 0.95]);
 hold on;plot(lagsTime22(rFC22==max(rFC22)),max(rFC22),'.r','MarkerSize',20);
 text(lagsTime22(rFC22==max(rFC22)),max(rFC22)-0.02,['max corr. at ' num2str(lagsTime22(rFC22==max(rFC22))) ' [msec]'],'FontSize',10);
-%% derivative maps - all brain
-ZZ3d = reshape(ZZ,[],100,9);
-derZZ = zeros(size(ZZ3d));
-for i=1:size(ZZ3d,2)
-    if i<100
-        derZZ(:,i,:) = ZZ3d(:,i+1,:)-ZZ3d(:,i,:);
-    else
-        derZZ(:,i,:) = ZZ3d(:,i,:);
-    end
-end
-avgDerZZ_target = mean(derZZ(:,:,1:3),3);
-avgDerZZ_flankers = mean(derZZ(:,:,4:6),3);
-avgDerZZ_combined = mean(derZZ(:,:,7:8),3);
-% figure(101);suptitle('target derivative maps');
-% figure(102);suptitle('flankers derivative maps');
-% figure(103);suptitle('combined derivative maps');
-% time_after_onset = 10:20:500; % in msec
-% for i=1:length(time_after_onset)
-%     thisTime = time_after_onset(i);
-%     figure(101);
-%     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-%     imf2(rshp(avgDerZZ_target(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);
-%     figure(102);
-%     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-%     imf2(rshp(avgDerZZ_flankers(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);    
-%     figure(103);
-%     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-%     imf2(rshp(avgDerZZ_combined(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);
-% end
 %% derivative maps - target ROI
-time_after_onset = 10:20:500; % in msec
+time_after_onset = 10:10:250; % in msec
 ZZ3d = reshape(ZZ,[],100,9);
 derZZ = zeros(size(ZZ3d));
 filtWidth = 3;
@@ -302,7 +292,7 @@ figure(2031);suptitle('combined derivative maps - normalized (same scale)');
 % cAxis = [prctile([avgDerZZ_target(:);avgDerZZ_flankers(:);avgDerZZ_combined(:)],1),prctile([avgDerZZ_target(:);avgDerZZ_flankers(:);avgDerZZ_combined(:)],98)];
 cAxis1 = [prctile([avgDerZZ_target(:)],1),prctile([avgDerZZ_target(:)],99)];
 cAxis2 = [prctile([avgDerZZ_flankers(:)],1),prctile([avgDerZZ_flankers(:)],99)];
-xLim = [1.55,3.45];yLim = [2,4.8];
+xLim = [1.8,3.3];yLim = [1.8,3];
 for i=1:length(time_after_onset)
     thisTime = time_after_onset(i);
     figure(201);
@@ -316,37 +306,37 @@ for i=1:length(time_after_onset)
         rectangle('Position',[xLim(1)+0.1,yLim(2)-0.2,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
         text(xLim(1)+0.3,yLim(2)-0.25,'1mm','color',[1 1 1],'fontsize',8);
     end
-    figure(2011);
-    subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-    imf2(rshp(avgDerZZ_target1(:,thisTime/10)));title([ num2str(thisTime) 'msec']);
-    xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
-    xlim(xLim);ylim(yLim);
-    if i==1
-        colorbar;
-        rectangle('Position',[xLim(1)+0.1,yLim(2)-0.2,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
-        text(xLim(1)+0.3,yLim(2)-0.25,'1mm','color',[1 1 1],'fontsize',8);
-    end
+%     figure(2011);
+%     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
+%     imf2(rshp(avgDerZZ_target1(:,thisTime/10)));title([ num2str(thisTime) 'msec']);
+%     xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+%     xlim(xLim);ylim(yLim);
+%     if i==1
+%         colorbar;
+%         rectangle('Position',[xLim(1)+0.1,yLim(2)-0.2,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+%         text(xLim(1)+0.3,yLim(2)-0.25,'1mm','color',[1 1 1],'fontsize',8);
+%     end
     figure(202);
     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-    imf2(rshp(avgDerZZ_flankers(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);  
+    imf2(rshp(avgDerZZ_flankers(:,thisTime/10)));title([ num2str(thisTime) 'msec']);  
     xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
     xlim(xLim);ylim(yLim);
     caxis(cAxis2);
     if i==1
         colorbar;
-        rectangle('Position',[2.9,4.8,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
-        text(2.9,4.65,'1mm','color',[1 1 1],'fontsize',8);
+        rectangle('Position',[xLim(1)+0.1,yLim(2)-0.2,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+        text(xLim(1)+0.3,yLim(2)-0.25,'1mm','color',[1 1 1],'fontsize',8);
     end
-    figure(2021);
-    subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
-    imf2(rshp(avgDerZZ_flankers1(:,thisTime/10)));title([ num2str(thisTime) 'msec']);
-    xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
-    xlim(xLim);ylim(yLim);
-    if i==1
-        colorbar;
-        rectangle('Position',[2.8,4.8,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
-        text(2.9,4.65,'1mm','color',[1 1 1],'fontsize',8);
-    end
+%     figure(2021);
+%     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
+%     imf2(rshp(avgDerZZ_flankers1(:,thisTime/10)));title([ num2str(thisTime) 'msec']);
+%     xlabel('');set(gca,'xticklabel',[]);set(gca,'xtick',[]);ylabel('');set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+%     xlim(xLim);ylim(yLim);
+%     if i==1
+%         colorbar;
+%         rectangle('Position',[2.8,4.8,1,0.1],'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);
+%         text(2.9,4.65,'1mm','color',[1 1 1],'fontsize',8);
+%     end
 %     figure(203);
 %     subplot(sqrt(length(time_after_onset)),sqrt(length(time_after_onset)),i);
 %     imf2(rshp(avgDerZZ_combined(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);
@@ -401,3 +391,22 @@ for i=1:length(time_after_onset)
     imf2(rshp(tempbrn)); hold on;
     imf2(rshp(avgDerZZ_combined(:,thisTime/10)));title([ num2str(thisTime) 'msec after stimulus onset']);
 end
+%% linear summation - combined (video)
+avgTarget = ZZ(:,1:300);%avgTarget = (avgTarget - avgTarget(1)); 
+avgFlankers = ZZ(:,301:600); %avgFlankers = (avgFlankers - avgFlankers(1)); 
+avgCombined = ZZ(:,601:end); %avgCombined = avgCombined - avgCombined(1); 
+avgLS = avgTarget + avgFlankers;
+difference = avgLS - avgCombined;
+implay(rshp(difference));
+% < --- save video
+v = VideoWriter('C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\2021.03.15 - target flankers\LSminusCombined.avi');
+open(v);
+cAxis = [prctile(difference(:),15) prctile(difference(:),85)];
+difference = rshp(difference);
+for l=1:size(difference,3)
+    imf2(difference(:,:,l));colormap('parula'); caxis(cAxis);colorbar;
+    frame = getframe(gcf);
+    writeVideo(v,frame);
+end
+close(v);
+% --- >

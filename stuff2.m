@@ -241,6 +241,74 @@ for m=3:length(files)
     NADAV = thisSNR_Summary{6};
     TSCAwGLM = thisSNR_Summary{7};
     Title = {'MSE','PSNR','CNR','MSSIM','Pearson''s Corr','CP'};
+    Title2 = {'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
+    Title3 = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
+    retMaps = thisSNR_Summary{8};
+    clusterEvalDBI = thisSNR_Summary{9};
+    clusterEvalS = thisSNR_Summary{10};
+    figure("name",num2str(m*100),'Position', [100 100 1800 600])
+    for i=1:6 % iterate the 6 performance measures
+        subplot(2,3,i)
+        boxplot([squeeze(mean(TSCAwGLM(i,:,:),2)) squeeze(mean(TSCA(i,:,:),2)) squeeze(mean(Tmax(i,:,:),2)) squeeze(mean(ORIG(i,:,:),2))...
+            squeeze(mean(Corr(i,:,:),2)) squeeze(mean(GLM(i,:,:),2)) squeeze(mean(NADAV(i,:,:),2))]...
+            ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+        ylabel(Title{i});
+        box off; set(gca,'XTickLabelRotation',45);
+    end
+    
+    % fix silhouette indexes
+    for j=1:7 % iterate method
+        for k=1:100 % iterate repitition
+            if length(clusterEvalS{j}(k).s)~=240
+                clusterEvalS{j}(k).s = [clusterEvalS{j}(k).s;-1*ones(240-length(clusterEvalS{j}(k).s),1)];
+            end
+        end
+    end
+    % end fix
+
+    % iterate methods and plot retinotopic maps 
+    figure("name",num2str(m*1000),'Position', [100 100 1800 900])
+    for kk=2:7
+        subplot(2,4,kk)
+        imagesc(reshape(retMaps{kk-1},40,40,3)); title([Title2{kk}]);
+        xlabel('pixels');ylabel('pixels');
+    end
+    subplot(2,4,1) % plot tsca+glm in first subplot
+    imagesc(reshape(retMaps{7},40,40,3)); title([Title2{1}]);
+    xlabel('pixels');ylabel('pixels');
+    subplot(2,4,8);
+    imagesc(rshp(retinotopicMap));xlabel('pixels'); ylabel('pixels');title('Expected Map');
+    set(gca,'xticklabel',[]);set(gca,'xtick',[]);set(gca,'yticklabel',[]);set(gca,'ytick',[]);
+    % end
+    % boxblot of silhouette index (last subplot, #8)
+%     set(0,'DefaultTextFontSize',6);
+    figure("name",num2str(m*10),'Position', [100 100 1600 600])
+    subplot 121
+    boxplot([median([clusterEvalS{7}.s])' median([clusterEvalS{1}.s])' median([clusterEvalS{2}.s])' median([clusterEvalS{3}.s])'...
+    median([clusterEvalS{4}.s])' median([clusterEvalS{5}.s])' median([clusterEvalS{6}.s])']...
+    ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+    ylabel('Silhouette Index');box off;ylim([-1,1]);
+    set(gca,'XTickLabelRotation',45);
+    subplot 122
+    boxplot([([clusterEvalDBI{7}.DBI])' ([clusterEvalDBI{1}.DBI])' ([clusterEvalDBI{2}.DBI])' ([clusterEvalDBI{3}.DBI])'...
+        ([clusterEvalDBI{4}.DBI])' ([clusterEvalDBI{5}.DBI])' ([clusterEvalDBI{6}.DBI])']...
+        ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+    ylabel('DBI');box off; set(gca,'XTickLabelRotation',45);
+    % end
+end
+%% show simulation results adjusted dbi and si (without running it all over again) 2 - supplementary material 
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\simulation results 2';
+files = dir(path);
+for m=3:length(files)
+    load(fullfile(files(m).folder,files(m).name)); 
+    TSCA = thisSNR_Summary{1};
+    Tmax = thisSNR_Summary{2};
+    ORIG = thisSNR_Summary{3};
+    Corr = thisSNR_Summary{4};
+    GLM = thisSNR_Summary{5};
+    NADAV = thisSNR_Summary{6};
+    TSCAwGLM = thisSNR_Summary{7};
+    Title = {'MSE','PSNR','CNR','MSSIM','Pearson''s Corr','CP'};
     Title2 = {'TSCA & GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
     Title3 = {'(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)'};
     retMaps = thisSNR_Summary{8};
@@ -267,6 +335,18 @@ for m=3:length(files)
         end
     end
     % end fix
+    % calculate adjusted silhouette and DBI
+        NN = histcounts(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))'); % size of each cluster
+        expectedClustSize = length(makeClustVector(cellfun(@(x) size(x,1),X(:,j)))')/params.experiment.N; % expected cluster size
+        NCM = (params.experiment.N-length(unique(NN))); % number of clusters mismatch
+        SP = abs(NN - expectedClustSize)/expectedClustSize; % size penalty of each cluster
+        TP = SP + NCM; % total penalty
+        disp([fn{j} ' ' num2str(mean(TP))])
+        TP_allPoints = repelem(TP,NN);
+        s{j} = s{j} - TP_allPoints';
+        AllS{j} = [AllS{j};s{j}];
+        AllmedS{j} = [AllmedS{j};median(s{j})];
+
 
     % iterate methods and plot retinotopic maps 
     for kk=2:7
@@ -280,15 +360,22 @@ for m=3:length(files)
     xlabel('pixels');ylabel('pixels');
     % end
     % boxblot of silhouette index (last subplot, #8)
-    set(0,'DefaultTextFontSize',6);
-    subplot(2,4,8) 
+%     set(0,'DefaultTextFontSize',6);
+    figure(m*10);
+    subplot 121
     boxplot([median([clusterEvalS{7}.s])' median([clusterEvalS{1}.s])' median([clusterEvalS{2}.s])' median([clusterEvalS{3}.s])'...
     median([clusterEvalS{4}.s])' median([clusterEvalS{5}.s])' median([clusterEvalS{6}.s])']...
     ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
-    ylabel('Silhouette Index');title(Title3{8});box off;ylim([-1,1]);
-    set(0,'DefaultTextFontSize',14);
+    ylabel('Silhouette Index');box off;ylim([-1,1]);
+    set(gca,'XTickLabelRotation',45);
+    subplot 122
+    boxplot([([clusterEvalDBI{7}.DBI])' ([clusterEvalDBI{1}.DBI])' ([clusterEvalDBI{2}.DBI])' ([clusterEvalDBI{3}.DBI])'...
+        ([clusterEvalDBI{4}.DBI])' ([clusterEvalDBI{5}.DBI])' ([clusterEvalDBI{6}.DBI])']...
+        ,char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
+    ylabel('DBI');box off; set(gca,'XTickLabelRotation',45);
     % end
 end
+
 %% calculate and show adjusted Si and DBI for supplementary material (optimal maps)
 path = 'E:\comparision results 2';
 files = dir(path);
@@ -414,3 +501,67 @@ for j=1:6 % iterate six metrics
         comparison2manualMaps181218_2{7}(:,j)],char({'T&G';'TSCA';'Tmax';'AOF';'Corr';'GLM';'MPT'}),'symbol', '');
     set(gca,'XTickLabelRotation',60);ylabel(Title{j});box off;
 end
+%% supp figure 2 - dbi and silhouette with decreassing SNR
+%% show simulation results (without running it all over again) - supplementary material
+path = 'C:\Users\orica\OneDrive\Desktop\2nd degree\matlab codez\matlab - vsdi\simulation results 2';
+files = dir(path);
+SNRorder = [5,3,4,7,6];
+clusterEvalDBI = zeros(100,5,7);
+clusterEvalS = zeros(100,5,7);
+for m=1:length(SNRorder)
+    load(fullfile(files(SNRorder(m)).folder,files(SNRorder(m)).name)); 
+    thisclusterEvalDBI = thisSNR_Summary{9};
+    thisclusterEvalS = thisSNR_Summary{10};
+    % fix silhouette indexes
+    for j=1:7 % iterate method
+        for k=1:100 % iterate repitition
+            if length(thisclusterEvalS{j}(k).s)~=240
+                thisclusterEvalS{j}(k).s = [thisclusterEvalS{j}(k).s;-1*ones(240-length(thisclusterEvalS{j}(k).s),1)];
+            end
+        end
+        clusterEvalDBI(:,m,j) = [thisclusterEvalDBI{j}.DBI]';
+        clusterEvalS(:,m,j) = [mean([thisclusterEvalS{j}.s])]';
+    end
+    % end fix
+end
+Title2 = {'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
+for i=1:7
+    figure("name",Title2{i},'Position', [100 100 1400 600]);
+    suptitle(Title2{i});
+    subplot 121;
+    errorbar(1:5,nanmean(clusterEvalS2(:,:,i)),nanstd(clusterEvalS2(:,:,i)));
+    xlim([0,6]);ylabel('adjusted Silhouette Index');
+    xticks(1:5);
+    xticklabels({'SNR=inf','SNR=5[dB]','SNR=0[dB]','SNR=-5[dB]','SNR=-10[dB]'});
+    set(gca,'XTickLabelRotation',45);
+    ylim([-1,1]);
+    subplot 122;
+    errorbar(1:5,nanmean(clusterEvalDBI2(:,:,i)),nanstd(clusterEvalDBI2(:,:,i)));
+    xlim([0,6]);ylabel('adjusted DBI');
+    xticks(1:5);
+    xticklabels({'SNR=inf','SNR=5[dB]','SNR=0[dB]','SNR=-5[dB]','SNR=-10[dB]'});
+    set(gca,'XTickLabelRotation',45);
+    ylim([-1,7]);
+end
+%% Figure 4 main
+Title2 = {'TSCA and GLM','TSCA','Tmax','AOF','Corr','GLM','MPT'};
+figure("name","All",'Position', [50 100 1450 620]);
+for i=1:7
+    subplot 121;
+    plot(1:5,nanmean(clusterEvalS2(:,:,i)),'-o');hold on;
+    subplot 122;
+    plot(1:5,nanmean(clusterEvalDBI2(:,:,i)),'-o'); hold on;
+
+end
+subplot 121;
+xlim([0,6]);ylabel('adjusted Silhouette Index');
+xticks(1:5);
+xticklabels({'SNR=inf','SNR=5[dB]','SNR=0[dB]','SNR=-5[dB]','SNR=-10[dB]'});
+set(gca,'XTickLabelRotation',45);
+legend(Title2,'FontSize',12,'location','southwest');box off;
+subplot 122;
+xlim([0,6]);ylabel('adjusted DBI');
+xticks(1:5);
+xticklabels({'SNR=inf','SNR=5[dB]','SNR=0[dB]','SNR=-5[dB]','SNR=-10[dB]'});
+set(gca,'XTickLabelRotation',45);
+legend(Title2,'FontSize',12,'location','northwest');box off;
